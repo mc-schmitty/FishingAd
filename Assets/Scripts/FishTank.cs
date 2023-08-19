@@ -36,7 +36,8 @@ public class FishTank : MonoBehaviour
     {
         Empty,
         Interested,
-        Catchable
+        Catchable,
+        Disabled
     }
 
 
@@ -75,8 +76,7 @@ public class FishTank : MonoBehaviour
 
         }
 
-        state = TankState.Empty;
-        timeAtNextEvent = Time.fixedTime + Random.Range(6f, 12f);
+        state = TankState.Disabled;
     }
 
     private void Update()
@@ -84,6 +84,13 @@ public class FishTank : MonoBehaviour
         // loop to occasionally make fish active and/or catchable
         CheckUpdateState();
 
+    }
+
+    // Just a way to start fish states
+    public void StartFishStates()
+    {
+        timeAtNextEvent = Time.fixedTime + Random.Range(6f, 12f);
+        state = TankState.Empty;
     }
 
     // Funny little thematic function: try to catch a fish, returns fish caught or return null if nothing caught
@@ -96,7 +103,7 @@ public class FishTank : MonoBehaviour
             fishPool.Remove(outp);
 
             // manybe send a message that a fish was caught
-            timeAtNextEvent = Time.fixedTime + stateScareFish();
+            timeAtNextEvent = Time.fixedTime + stateCaughtFish();
             return outp;
         }
 
@@ -112,6 +119,9 @@ public class FishTank : MonoBehaviour
             float newDelay = 0;
 
             switch(state){
+                case TankState.Disabled:
+                    newDelay = 1f;
+                    break;
                 case TankState.Empty:
                     // Choose a fish to become interested
                     newDelay = stateChooseInterested();
@@ -179,6 +189,16 @@ public class FishTank : MonoBehaviour
             interestedFish.GetComponent<FishMovement>().ResumeWander();
             interestedFish = null;
         }
+        return Random.Range(6f, 15f);
+    }
+
+
+    // Fish caught, kindly let it know
+    private float stateCaughtFish()
+    {
+        state = TankState.Empty;
+        interestedFish.GetComponent<FishMovement>().AttatchToBobber(bobberHookTransform);
+        interestedFish = null;
         return Random.Range(6f, 15f);
     }
 }

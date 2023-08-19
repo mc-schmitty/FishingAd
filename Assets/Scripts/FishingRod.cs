@@ -26,10 +26,12 @@ public class FishingRod : MonoBehaviour
     private Vector3 bobberPullForce;
 
     private float delay;
+    private bool firstCastFlag;
 
     void Start()
     {
         IsCast = false;
+        firstCastFlag = true;
     }
 
     // Temp update
@@ -70,6 +72,12 @@ public class FishingRod : MonoBehaviour
         rodAnim.SetTrigger("CastOff");
         delay += 2f;
         Invoke("CastBobber", 0.17f);
+
+        if (firstCastFlag)
+        {
+            firstCastFlag = false;
+            FishTank.fishTank.StartFishStates();
+        }
     }
 
     // This is called after the cast animation starts
@@ -106,7 +114,7 @@ public class FishingRod : MonoBehaviour
     private int FishCatchSuccess(Fish fish)
     {
         Debug.Log("Caught a " + fish.FishName + " and scored " + fish.Points + " points!");
-        fish.gameObject.SetActive(false);
+        //fish.gameObject.SetActive(false);
         return 1;
     }
 

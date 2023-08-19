@@ -68,6 +68,13 @@ public class FishMovement : MonoBehaviour
         wanderCoroutine = StartCoroutine(MoveBetweenLocations(wanderPoint1, wanderPoint2));
     }
 
+    public void AttatchToBobber(Transform bobberLocation)
+    {
+        transform.parent = bobberLocation;
+        transform.Rotate(new Vector3(0, 0, -90));
+        sr.flipX = false;
+    }
+
 
     // Move to a singular location, then stop.
     private IEnumerator MoveToLocation(Vector3 pos)
