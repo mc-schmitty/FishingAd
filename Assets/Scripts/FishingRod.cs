@@ -61,6 +61,8 @@ public class FishingRod : MonoBehaviour
         int success = caughtFish == null ? FishCatchFail() : FishCatchSuccess(caughtFish);
         delay += 1f + success;
         Invoke("StowBobber", 1f);
+        if(success == 1)
+            StartCoroutine(FishStowCoroutine(caughtFish));
     }
 
     // This starts the cast animation
@@ -121,6 +123,17 @@ public class FishingRod : MonoBehaviour
     private int FishCatchFail()
     {
         return 0;
+    }
+
+    private IEnumerator FishStowCoroutine(Fish caughtFish)
+    {
+        yield return new WaitForSeconds(0.7f);
+
+        // todo: expand on fish catching, prob send the fish to heaven or smth
+        caughtFish.transform.parent = null;
+        caughtFish.transform.rotation = Quaternion.identity;
+        caughtFish.GetComponent<FishMovement>().doWiggle = false;
+        //caughtFish.gameObject.SetActive(false);
     }
 
 }

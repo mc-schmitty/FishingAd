@@ -20,6 +20,7 @@ public class FishTank : MonoBehaviour
     private GameObject fishPrefab;
     [SerializeField]
     private Transform bobberHookTransform;
+    private BobberEffects bobScript;
 
 
     private FishSO[] loadedFishSO;
@@ -53,8 +54,8 @@ public class FishTank : MonoBehaviour
     {
         // Load scriptableobjects
         loadedFishSO = Resources.LoadAll<FishSO>("Fish");
-
         fishPool = new List<Fish>();
+        bobScript = bobberHookTransform.GetComponentInParent<BobberEffects>();
 
         // Initialize starting fish
         for (int n = 0; n < initialPoolSize; n++)
@@ -73,7 +74,6 @@ public class FishTank : MonoBehaviour
             fm.wanderPoint2 = fm.transform.position - (Vector3.left * invert) * (5.0f + Random.Range(-0.3f, 0.3f));
             fm.swimSpeed += Random.Range(-0.2f, 0.4f);      // Lot of random calls here per fish
             fm.wiggleSpeed += Random.Range(-30, 30);
-
         }
 
         state = TankState.Disabled;
@@ -158,6 +158,7 @@ public class FishTank : MonoBehaviour
     private float stateBecomeCatchable()
     {
         state = TankState.Catchable;
+        bobScript.DoBob(true);
         return Random.Range(0.5f, 1f);
     }
 

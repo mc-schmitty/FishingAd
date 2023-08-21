@@ -1833,6 +1833,7 @@ MonoBehaviour:
   - {fileID: 583301669}
   - {fileID: 1725702948}
   - {fileID: 547335991}
+  - {fileID: 691487938}
 --- !u!120 &714034016
 LineRenderer:
   m_ObjectHideFlags: 0
@@ -3640,7 +3641,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 83256becf3c9edc4a97bb3ddacdcb061, type: 2}
+  - {fileID: 2100000, guid: 42c93e8f046fc68498fdf36fb8e3009f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
