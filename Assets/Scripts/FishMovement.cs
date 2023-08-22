@@ -73,6 +73,8 @@ public class FishMovement : MonoBehaviour
         transform.parent = bobberLocation;
         transform.Rotate(new Vector3(0, 0, -90));
         sr.flipX = false;
+        if(wanderCoroutine != null)
+            StopCoroutine(wanderCoroutine);
     }
 
 

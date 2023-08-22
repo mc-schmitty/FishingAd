@@ -60,22 +60,9 @@ public class FishTank : MonoBehaviour
         // Initialize starting fish
         for (int n = 0; n < initialPoolSize; n++)
         {
-            Fish newFish = GameObject.Instantiate(fishPrefab, transform.position + Random.insideUnitSphere * 2, transform.rotation, transform).GetComponent<Fish>();
-            // So rn im not sure if start will be called at instantiation, or after this function finishes. I guess ill find out and update this later
-            newFish.ScaleMod = ScaleMod;
-            newFish.SizeUnits = SizeUnits;
-            newFish.Initialize(loadedFishSO[Random.Range(0, loadedFishSO.Length)]);
-            newFish.name = newFish.FishName + newFish.GetInstanceID();
-            fishPool.Add(newFish);
-
-            FishMovement fm = newFish.GetComponent<FishMovement>();
-            int invert = Random.value >= 0.5 ? 1 : -1;      // Randomly invert the starting positions
-            fm.wanderPoint1 = fm.transform.position - (Vector3.right * invert) * (5.0f + Random.Range(-0.3f, 0.3f));
-            fm.wanderPoint2 = fm.transform.position - (Vector3.left * invert) * (5.0f + Random.Range(-0.3f, 0.3f));
-            fm.swimSpeed += Random.Range(-0.2f, 0.4f);      // Lot of random calls here per fish
-            fm.wiggleSpeed += Random.Range(-30, 30);
+            InitializeNewFish();
         }
-
+        StartCoroutine(PopulateTank());
         state = TankState.Disabled;
     }
 
@@ -109,6 +96,29 @@ public class FishTank : MonoBehaviour
 
         timeAtNextEvent = Time.fixedTime + stateScareFish();
         return null;
+    }
+
+    private Fish InitializeNewFish()
+    {
+        if (fishPool.Count >= maxPoolSize)
+            return null;
+
+        Fish newFish = GameObject.Instantiate(fishPrefab, transform.position + Random.insideUnitSphere * 2, transform.rotation, transform).GetComponent<Fish>();
+        // So rn im not sure if start will be called at instantiation, or after this function finishes. I guess ill find out and update this later
+        newFish.ScaleMod = ScaleMod;
+        newFish.SizeUnits = SizeUnits;
+        newFish.Initialize(loadedFishSO[Random.Range(0, loadedFishSO.Length)]);
+        newFish.name = newFish.FishName + newFish.GetInstanceID();
+        fishPool.Add(newFish);
+
+        FishMovement fm = newFish.GetComponent<FishMovement>();
+        int invert = Random.value >= 0.5 ? 1 : -1;      // Randomly invert the starting positions
+        fm.wanderPoint1 = fm.transform.position - (Vector3.right * invert) * (5.0f + Random.Range(-0.3f, 0.3f));
+        fm.wanderPoint2 = fm.transform.position - (Vector3.left * invert) * (5.0f + Random.Range(-0.3f, 0.3f));
+        fm.swimSpeed += Random.Range(-0.2f, 0.4f);      // Lot of random calls here per fish
+        fm.wiggleSpeed += Random.Range(-30, 30);
+
+        return newFish;
     }
 
     // Trying some weird state-based thing
@@ -201,5 +211,18 @@ public class FishTank : MonoBehaviour
         interestedFish.GetComponent<FishMovement>().AttatchToBobber(bobberHookTransform);
         interestedFish = null;
         return Random.Range(6f, 15f);
+    }
+
+
+    // Looping, adding new fish until it reaches max
+    private IEnumerator PopulateTank()
+    {
+        float secondsUntilPopulate;
+        while (true)
+        {
+            secondsUntilPopulate = Mathf.InverseLerp(0, maxPoolSize, fishPool.Count) * 29 + 1;      // funny magic numbers for now, todo: add variables
+            yield return new WaitForSeconds(secondsUntilPopulate);
+            InitializeNewFish();
+        } 
     }
 }

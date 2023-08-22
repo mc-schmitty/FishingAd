@@ -132,7 +132,9 @@ public class FishingRod : MonoBehaviour
         // todo: expand on fish catching, prob send the fish to heaven or smth
         caughtFish.transform.parent = null;
         caughtFish.transform.rotation = Quaternion.identity;
-        caughtFish.GetComponent<FishMovement>().doWiggle = false;
+        FishMovement fm = caughtFish.GetComponent<FishMovement>();
+        fm.doWiggle = false;
+        GameObject.Destroy(caughtFish.gameObject, 3f);
         //caughtFish.gameObject.SetActive(false);
     }
 
