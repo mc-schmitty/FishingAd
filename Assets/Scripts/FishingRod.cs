@@ -25,6 +25,9 @@ public class FishingRod : MonoBehaviour
     [SerializeField]
     private Vector3 bobberPullForce;
 
+    [SerializeField]
+    private MoveToTankIcon fishUI;
+
     private float delay;
     private bool firstCastFlag;
 
@@ -134,7 +137,10 @@ public class FishingRod : MonoBehaviour
         caughtFish.transform.rotation = Quaternion.identity;
         FishMovement fm = caughtFish.GetComponent<FishMovement>();
         fm.doWiggle = false;
-        GameObject.Destroy(caughtFish.gameObject, 3f);
+
+        yield return new WaitForSeconds(0.75f);
+        fishUI.MoveFishToIcon(fm.transform);
+        //GameObject.Destroy(caughtFish.gameObject, 3f);
         //caughtFish.gameObject.SetActive(false);
     }
 
