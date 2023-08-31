@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -17,14 +18,32 @@ public class MoveToTankIcon : MonoBehaviour
     private float timeToMoveFish = 1f;
 
 
+    private void OnEnable()
+    {
+        FishingRod.FishCaught += MoveFishToIcon;
+    }
+
+    private void OnDisable()
+    {
+        FishingRod.FishCaught -= MoveFishToIcon;
+    }
+
+    [Obsolete("Method now uses FishingRod.FishCaught delegate")]
     public void MoveFishToIcon(Transform fish)
     {
         StartCoroutine(MoveToIcon(fish, tankIconTransform, timeToMoveFish));
     }
 
+    private void MoveFishToIcon(Fish fish)
+    {
+        StartCoroutine(MoveToIcon(fish.transform, tankIconTransform, timeToMoveFish));
+    }
+
     // Smoothly lerp fish to tank icon
     IEnumerator MoveToIcon(Transform fish, RectTransform icon, float timeToComplete)
     {
+        yield return new WaitForSeconds(0.7f + 1.5f);  // Wait until fish is finished showing up
+
         //Vector3 rectPos = Camera.main.ScreenToWorldPoint(icon.transform.position);        // Get to and from positions
         Ray r = RectTransformUtility.ScreenPointToRay(Camera.main, icon.position);      // need ray from screen to world
         Vector3 rectPos = r.origin + (r.direction.normalized * 1);                      // move along ray by set amount

@@ -6,6 +6,9 @@ using UnityEngine;
 
 public class FishingRod : MonoBehaviour
 {
+    public static event Action<Fish> FishCaught;
+    public static event Action FishLost;
+
     public bool IsCast
     { get; private set; }
 
@@ -120,11 +123,13 @@ public class FishingRod : MonoBehaviour
     {
         Debug.Log("Caught a " + fish.FishName + " and scored " + fish.Points + " points!");
         //fish.gameObject.SetActive(false);
+        FishCaught?.Invoke(fish);
         return 1;
     }
 
     private int FishCatchFail()
     {
+        FishLost?.Invoke();
         return 0;
     }
 
@@ -137,9 +142,10 @@ public class FishingRod : MonoBehaviour
         caughtFish.transform.rotation = Quaternion.identity;
         FishMovement fm = caughtFish.GetComponent<FishMovement>();
         fm.doWiggle = false;
+        
 
-        yield return new WaitForSeconds(0.75f);
-        fishUI.MoveFishToIcon(fm.transform);
+        yield return new WaitForSeconds(1.5f);
+        //fishUI.MoveFishToIcon(fm.transform);
         //GameObject.Destroy(caughtFish.gameObject, 3f);
         //caughtFish.gameObject.SetActive(false);
     }
