@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class MoveToTankIcon : MonoBehaviour
 {
@@ -14,9 +15,12 @@ public class MoveToTankIcon : MonoBehaviour
     private AnimationCurve smoothCurve;
     [SerializeField][Range(0f, 1f)]
     private float minScalePercentage = 0.2f;
+    //[SerializeField]
+    //private float timeToMoveFish = 1f;
     [SerializeField]
-    private float timeToMoveFish = 1f;
-
+    private Animator anim;
+    [SerializeField]
+    private Image fishImg;
 
     private void OnEnable()
     {
@@ -31,18 +35,20 @@ public class MoveToTankIcon : MonoBehaviour
     [Obsolete("Method now uses FishingRod.FishCaught delegate")]
     public void MoveFishToIcon(Transform fish)
     {
-        StartCoroutine(MoveToIcon(fish, tankIconTransform, timeToMoveFish));
+        StartCoroutine(MoveToIcon(fish, tankIconTransform, TimingInfo.FishReturnSeconds));
     }
 
     private void MoveFishToIcon(Fish fish)
     {
-        StartCoroutine(MoveToIcon(fish.transform, tankIconTransform, timeToMoveFish));
+        StartCoroutine(MoveToIcon(fish.transform, tankIconTransform, TimingInfo.FishReturnSeconds));
     }
 
     // Smoothly lerp fish to tank icon
     IEnumerator MoveToIcon(Transform fish, RectTransform icon, float timeToComplete)
     {
-        yield return new WaitForSeconds(0.7f + 1.5f);  // Wait until fish is finished showing up
+        yield return new WaitForSeconds(TimingInfo.FishPulledSeconds + TimingInfo.FishLingerSeconds);  // Wait until fish is finished showing up
+
+        StartCoroutine(FishEnterAnimation(fish));
 
         //Vector3 rectPos = Camera.main.ScreenToWorldPoint(icon.transform.position);        // Get to and from positions
         Ray r = RectTransformUtility.ScreenPointToRay(Camera.main, icon.position);      // need ray from screen to world
@@ -62,5 +68,13 @@ public class MoveToTankIcon : MonoBehaviour
 
         fish.gameObject.SetActive(false);
         newText.SetActive(true);
+    }
+
+    IEnumerator FishEnterAnimation(Transform fish)
+    {
+        yield return new WaitForSeconds(TimingInfo.FishReturnSeconds * 0.8f);
+        anim.SetTrigger("doBob");
+        fishImg.sprite = fish.GetComponent<SpriteRenderer>().sprite;
+        fishImg.transform.localScale = fish.localScale * 10;
     }
 }
