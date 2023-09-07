@@ -30,6 +30,8 @@ public class FishingRod : MonoBehaviour
 
     [SerializeField]
     private MoveToTankIcon fishUI;
+    [SerializeField]
+    private Transform fishStopPoint;
 
     private float delay;
     private bool firstCastFlag;
@@ -135,19 +137,16 @@ public class FishingRod : MonoBehaviour
 
     private IEnumerator FishStowCoroutine(Fish caughtFish)
     {
-        yield return new WaitForSeconds(0.7f);
+        yield return new WaitForSeconds(TimingInfo.FishPulledSeconds);
 
         // todo: expand on fish catching, prob send the fish to heaven or smth
         caughtFish.transform.parent = null;
         caughtFish.transform.rotation = Quaternion.identity;
         FishMovement fm = caughtFish.GetComponent<FishMovement>();
         fm.doWiggle = false;
+        caughtFish.transform.position = fishStopPoint.position;         // Set fish to point on screen 
         
-
-        yield return new WaitForSeconds(1.5f);
-        //fishUI.MoveFishToIcon(fm.transform);
-        //GameObject.Destroy(caughtFish.gameObject, 3f);
-        //caughtFish.gameObject.SetActive(false);
+        //yield return new WaitForSeconds(1.5f);
     }
 
 }

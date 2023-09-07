@@ -37,7 +37,14 @@ public class FishStatsUI : MonoBehaviour
         //transform.localScale = ogScale;
         menuAnim.SetTrigger("bounceIn");
         fishNameText.text = fish.FishName;
-        StartCoroutine(AddFishSizeLerp(fish.Size, 0.5f));
+        
+        StartCoroutine(AddFishSizeLerp(fish.Length, 0.5f));
+
+        yield return null;
+        fish.transform.position = new Vector3(fish.transform.position.x, fish.transform.position.y - fish.Height/2 * 0.01f, fish.transform.position.z);     // Getting weird issue with NaN, hope this fixes it
+        Debug.Log("yPos: " + fishNameText.rectTransform.position.y);
+        Debug.Log("adding: " + (fishNameText.rectTransform.rect.height + fish.Height * 10));
+        fishSizeText.rectTransform.localPosition = fishNameText.rectTransform.localPosition + Vector3.down * (fishNameText.rectTransform.rect.height + fish.Height * 10);
         yield return new WaitForSeconds(TimingInfo.FishLingerSeconds);
         menuAnim.SetTrigger("bounceIn");
         //transform.localScale = Vector3.zero;
@@ -51,6 +58,8 @@ public class FishStatsUI : MonoBehaviour
             fishSizeText.text = Mathf.Lerp(0, value, step).ToString("n2") + " cm";
             yield return null;
         }
+
+        fishSizeText.text = value.ToString("n2") + " cm";
         
     }
 }

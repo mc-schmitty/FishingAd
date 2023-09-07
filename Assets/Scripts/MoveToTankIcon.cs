@@ -55,6 +55,9 @@ public class MoveToTankIcon : MonoBehaviour
         Vector3 rectPos = r.origin + (r.direction.normalized * 1);                      // move along ray by set amount
         Vector3 ogFishPos = fish.position;
 
+        Quaternion rotOrigin = fish.rotation;
+        Quaternion rotFlipped = Quaternion.AngleAxis(180f, Vector3.forward) * rotOrigin;        // Quaternions kinda scare me sometimes
+
         Vector3 ogFishSize = fish.localScale;                                   // Get to and from scales
         Vector3 minFishSize = ogFishSize * minScalePercentage;
 
@@ -62,6 +65,7 @@ public class MoveToTankIcon : MonoBehaviour
         for(float step = 0; step <= 1; step += Time.deltaTime / timeToComplete)
         {
             fish.position = Vector3.Lerp(ogFishPos, rectPos, smoothCurve.Evaluate(step));
+            fish.rotation = Quaternion.Lerp(rotOrigin, rotFlipped, smoothCurve.Evaluate(step));
             fish.localScale = Vector3.Lerp(ogFishSize, minFishSize, smoothCurve.Evaluate(step));
             yield return null;
         }

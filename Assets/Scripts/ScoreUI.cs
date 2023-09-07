@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
-using UnityEditor.Build.Reporting;
 using UnityEngine;
 
 public class ScoreUI : MonoBehaviour
@@ -72,6 +71,6 @@ public class ScoreUI : MonoBehaviour
             yield return null;
         }
 
-        //addScoreText.color -= new Color(0, 0, 0, 1);
+        addScoreText.color = new Color(addScoreText.color.r, addScoreText.color.g, addScoreText.color.b, 0);
     }
 }

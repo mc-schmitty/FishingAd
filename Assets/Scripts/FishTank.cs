@@ -22,9 +22,11 @@ public class FishTank : MonoBehaviour
     private Transform bobberHookTransform;
     private BobberEffects bobScript;
 
-
     private FishSO[] loadedFishSO;
     private List<Fish> fishPool;
+
+    [SerializeField]
+    private Vector2 swimRange;
 
     [SerializeField]
     private Fish interestedFish;

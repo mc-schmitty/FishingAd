@@ -10,7 +10,8 @@ public class Fish : MonoBehaviour
     // ----------------------------------------
 
     public string FishName;
-    public float Size;
+    public float Length;
+    public float Height;
     public float Points;
 
     [SerializeField]
@@ -32,7 +33,8 @@ public class Fish : MonoBehaviour
         fishStats = fishSO;
         FishName = fishStats.fishName;
         sr.sprite = fishStats.fishSprite;
-        Size = Random.Range(fishStats.minSize, fishStats.maxSize);
+        Length = Random.Range(fishStats.minSize, fishStats.maxSize);
+        Height = (sr.sprite.rect.height / sr.sprite.rect.width) * Length;
         ScaleSize();
 
         // Point formula tbd, current idea is base + bonus
@@ -42,7 +44,7 @@ public class Fish : MonoBehaviour
            Meanwhile a large fish of size min with base 50 points would score: 50 + 25 * (1 + 100%) = 100 points
            Medium at half: 25 + 12.5 * (1 + 50%) = idk prob around 25 + 19 ~= 44?
            idk how i like this basically the base points are the biggest deal and the size bonus isnt when its usually the other way in fishing */
-        Points = fishStats.basePoints + fishStats.basePoints * 2 * (Mathf.InverseLerp(fishStats.minSize, fishStats.maxSize, Size));
+        Points = fishStats.basePoints + fishStats.basePoints * 2 * (Mathf.InverseLerp(fishStats.minSize, fishStats.maxSize, Length));
     }
 
     private void ScaleSize()
@@ -53,7 +55,7 @@ public class Fish : MonoBehaviour
         // Get the number of units the fish sprite take up ingame
         float inGameSize = width / ppu;
         // Calculate the scale required to modify the ingamesize to the rolled irl fish size (oops also got to convert size to m from cm)
-        float scaling = (Size * SizeUnits) / inGameSize;
+        float scaling = (Length * SizeUnits) / inGameSize;
 
         baseScale = scaling;
         // Adjust the scale by this amount * global scale modifier
