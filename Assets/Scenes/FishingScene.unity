@@ -999,6 +999,19 @@ MonoBehaviour:
   fishPrefab: {fileID: 6280021012173406540, guid: ac0f03fabb92337498a5dd1cfd3de835,
     type: 3}
   bobberHookTransform: {fileID: 691487938}
+  timeRangeInitialChooseInterested: {x: 5, y: 8}
+  timeRangeBecomeCatchable: {x: 3, y: 8}
+  timeRangeCatchableWindow: {x: 0.6, y: 1.2}
+  timeRangeRepeatBecomeCatchable: {x: 1.5, y: 4}
+  timeRangeChooseInterestedFailure: {x: 6, y: 15}
+  timeRangeChooseInterestedSuccess: {x: 6, y: 15}
+  leaveHookChance: 0.6
+  fakeoutChance: 0.6
+  maxCatchFakeouts: 2
+  wanderInitialDist: 5
+  wanderRandomDistRange: {x: -0.3, y: 0.3}
+  swimSpeedModRandomRange: {x: -0.2, y: 0.4}
+  wiggleSpeedModRandomRange: {x: -30, y: 30}
   interestedFish: {fileID: 0}
   state: 0
   timeAtNextEvent: 0
@@ -1208,6 +1221,18 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1299062986}
     m_Modifications:
+    - target: {fileID: 1339819357943274, guid: c1c88308ebb5d2541a282905b854ee4c, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1377231469625092, guid: c1c88308ebb5d2541a282905b854ee4c, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1473353547583274, guid: c1c88308ebb5d2541a282905b854ee4c, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1722726733478836, guid: c1c88308ebb5d2541a282905b854ee4c, type: 3}
       propertyPath: m_Name
       value: BigSplash
@@ -1416,7 +1441,7 @@ RectTransform:
   m_GameObject: {fileID: 503737940}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.49999997, y: 0.24999999, z: 1}
+  m_LocalScale: {x: 1, y: 0.24999999, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1295467677}
@@ -1425,7 +1450,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
   m_AnchoredPosition: {x: 0, y: -3}
-  m_SizeDelta: {x: 600, y: 50}
+  m_SizeDelta: {x: 300, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &503737942
 MonoBehaviour:
@@ -4535,7 +4560,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1755757771}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 4.5, z: -16}
+  m_LocalPosition: {x: 0, y: 4.53, z: -16}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5029,6 +5054,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fishNameText: {fileID: 666414791}
   fishSizeText: {fileID: 1295467678}
+  rulerTransform: {fileID: 503737941}
   menuAnim: {fileID: 2001513555}
 --- !u!1 &2012742960
 GameObject:

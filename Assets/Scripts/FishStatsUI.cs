@@ -11,6 +11,8 @@ public class FishStatsUI : MonoBehaviour
     [SerializeField]
     TextMeshProUGUI fishSizeText;
     [SerializeField]
+    RectTransform rulerTransform;
+    [SerializeField]
     Animator menuAnim;
 
     private Vector3 ogScale;
@@ -37,15 +39,16 @@ public class FishStatsUI : MonoBehaviour
         //transform.localScale = ogScale;
         menuAnim.SetTrigger("bounceIn");
         fishNameText.text = fish.FishName;
+        rulerTransform.sizeDelta = new Vector2(fish.Length * 10, rulerTransform.sizeDelta.y);
         
         StartCoroutine(AddFishSizeLerp(fish.Length, 0.5f));
 
-        yield return null;
+        yield return null;      // need time to let the fish get in position
         fish.transform.position = new Vector3(fish.transform.position.x, fish.transform.position.y - fish.Height/2 * 0.01f, fish.transform.position.z);     // Getting weird issue with NaN, hope this fixes it
         Debug.Log("yPos: " + fishNameText.rectTransform.position.y);
         Debug.Log("adding: " + (fishNameText.rectTransform.rect.height + fish.Height * 10));
-        fishSizeText.rectTransform.localPosition = fishNameText.rectTransform.localPosition + Vector3.down * (fishNameText.rectTransform.rect.height + fish.Height * 10);
-        yield return new WaitForSeconds(TimingInfo.FishLingerSeconds);
+        fishSizeText.rectTransform.localPosition = fishNameText.rectTransform.localPosition + Vector3.down * (fishNameText.rectTransform.rect.height + fish.Height * 10 + 30);  // magic numbers to make the ui look kinda good
+        yield return new WaitForSeconds(TimingInfo.FishLingerSeconds - Time.deltaTime);     // then remove some delay to account for the waiting above
         menuAnim.SetTrigger("bounceIn");
         //transform.localScale = Vector3.zero;
     }

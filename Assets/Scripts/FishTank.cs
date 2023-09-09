@@ -26,7 +26,41 @@ public class FishTank : MonoBehaviour
     private List<Fish> fishPool;
 
     [SerializeField]
-    private Vector2 swimRange;
+    [Tooltip("Seconds until state changes from Empty to Interested the first time you cast.")]      // Default: 6 - 12
+    private Vector2 timeRangeInitialChooseInterested;
+    [SerializeField]
+    [Tooltip("Seconds until state changes from Interested to Catchable.")]      // Default: 3 - 9
+    private Vector2 timeRangeBecomeCatchable;
+    [SerializeField]
+    [Tooltip("Seconds until state changes from Catchable.")]        // Default: 0.5 - 1
+    private Vector2 timeRangeCatchableWindow;
+    [SerializeField]
+    [Tooltip("Seconds until state changes from Interested to Catchable after fish stays at hook.")]     // Default: 1.5 - 4
+    private Vector2 timeRangeRepeatBecomeCatchable;
+    [SerializeField]
+    [Tooltip("Seconds until state changes from Empty to Interested after failing to catch a fish.")]        // Default: 6 - 15
+    private Vector2 timeRangeChooseInterestedFailure;
+    [SerializeField]
+    [Tooltip("Seconds until state changes from Empty to Interested after successfully catching a fish")]        // Default: 6 - 15
+    private Vector2 timeRangeChooseInterestedSuccess;
+
+    [SerializeField]
+    private float leaveHookChance = 0.6f;
+    [SerializeField]
+    private float fakeoutChance = 0.6f;
+    [SerializeField]
+    private int maxCatchFakeouts = 2;
+    private int fakeoutCount;
+
+    [SerializeField]
+    private float wanderInitialDist;
+    [SerializeField]
+    private Vector2 wanderRandomDistRange;
+    [SerializeField]
+    private Vector2 swimSpeedModRandomRange;
+    [SerializeField]
+    private Vector2 wiggleSpeedModRandomRange;
+
 
     [SerializeField]
     private Fish interestedFish;
@@ -78,7 +112,7 @@ public class FishTank : MonoBehaviour
     // Just a way to start fish states
     public void StartFishStates()
     {
-        timeAtNextEvent = Time.fixedTime + Random.Range(6f, 12f);
+        timeAtNextEvent = Time.fixedTime + Random.Range(timeRangeInitialChooseInterested.x, timeRangeInitialChooseInterested.y);
         state = TankState.Empty;
     }
 
@@ -115,10 +149,10 @@ public class FishTank : MonoBehaviour
 
         FishMovement fm = newFish.GetComponent<FishMovement>();
         int invert = Random.value >= 0.5 ? 1 : -1;      // Randomly invert the starting positions
-        fm.wanderPoint1 = fm.transform.position - (Vector3.right * invert) * (5.0f + Random.Range(-0.3f, 0.3f));
-        fm.wanderPoint2 = fm.transform.position - (Vector3.left * invert) * (5.0f + Random.Range(-0.3f, 0.3f));
-        fm.swimSpeed += Random.Range(-0.2f, 0.4f);      // Lot of random calls here per fish
-        fm.wiggleSpeed += Random.Range(-30, 30);
+        fm.wanderPoint1 = fm.transform.position - (Vector3.right * invert) * (wanderInitialDist + Random.Range(wanderRandomDistRange.x, wanderRandomDistRange.y));
+        fm.wanderPoint2 = fm.transform.position - (Vector3.left * invert) * (wanderInitialDist + Random.Range(wanderRandomDistRange.x, wanderRandomDistRange.y));
+        fm.swimSpeed += Random.Range(swimSpeedModRandomRange.x, swimSpeedModRandomRange.y);      // Lot of random calls here per fish
+        fm.wiggleSpeed += Random.Range(wiggleSpeedModRandomRange.x, wiggleSpeedModRandomRange.y);
 
         return newFish;
     }
@@ -163,33 +197,44 @@ public class FishTank : MonoBehaviour
         state = TankState.Interested;
         interestedFish = fishPool[Random.Range(0, fishPool.Count)];        // Choose random fish (might be expanded on later)
         interestedFish.GetComponent<FishMovement>().StartMoveToLocation(bobberHookTransform.position);
-        return Random.Range(3f, 9f);
+        fakeoutCount = 0;          // reset bob fakeouts
+        return Random.Range(timeRangeBecomeCatchable.x, timeRangeBecomeCatchable.y);
     }
 
     // Interested fish becomes catchable
     private float stateBecomeCatchable()
     {
-        state = TankState.Catchable;
-        bobScript.DoBob(true);
-        return Random.Range(0.5f, 1f);
+        if(Random.value > fakeoutChance || fakeoutCount >= maxCatchFakeouts)
+        {
+            state = TankState.Catchable;
+            bobScript.DoBob(true);
+            return Random.Range(timeRangeCatchableWindow.x, timeRangeCatchableWindow.y);
+        }
+        else
+        {
+            state = TankState.Interested;
+            bobScript.DoBob(false);             // fake bob occurs
+            fakeoutCount++;
+            return Random.Range(timeRangeRepeatBecomeCatchable.x, timeRangeRepeatBecomeCatchable.y);        // go to regular delay as if fish is staying after miss
+        }
     }
 
     // Interested fish stops being catchable, either stays or runs away
     private float stateStopCatchable()
     {
         // have chance fish returns to being interested and chance it flees
-        if(Random.value > 0.6)
+        if(Random.value > leaveHookChance)
         {
             state = TankState.Interested;
 
-            return Random.Range(1.5f, 4f);  
+            return Random.Range(timeRangeRepeatBecomeCatchable.x, timeRangeRepeatBecomeCatchable.y);  
         }
         else
         {
             state = TankState.Empty;
             interestedFish.GetComponent<FishMovement>().ResumeWander();
             interestedFish = null;
-            return Random.Range(6f, 15f);
+            return Random.Range(timeRangeChooseInterestedFailure.x, timeRangeChooseInterestedFailure.y);
         }
     }
 
@@ -202,7 +247,7 @@ public class FishTank : MonoBehaviour
             interestedFish.GetComponent<FishMovement>().ResumeWander();
             interestedFish = null;
         }
-        return Random.Range(6f, 15f);
+        return Random.Range(timeRangeChooseInterestedFailure.x, timeRangeChooseInterestedFailure.y);
     }
 
 
@@ -212,7 +257,7 @@ public class FishTank : MonoBehaviour
         state = TankState.Empty;
         interestedFish.GetComponent<FishMovement>().AttatchToBobber(bobberHookTransform);
         interestedFish = null;
-        return Random.Range(6f, 15f);
+        return Random.Range(timeRangeChooseInterestedSuccess.x, timeRangeChooseInterestedSuccess.y);
     }
 
 
