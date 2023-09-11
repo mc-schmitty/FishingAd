@@ -25,11 +25,12 @@ public class Fish : MonoBehaviour
     {
         if(sr == null)
             sr = GetComponent<SpriteRenderer>();
-        if (fishStats != null)
+        if (fishStats != null && Points == 0)
             Initialize(fishStats);
     }
     public void Initialize(FishSO fishSO)
     {
+        Debug.Log($"Initializing {fishSO.fishName}");
         fishStats = fishSO;
         FishName = fishStats.fishName;
         sr.sprite = fishStats.fishSprite;

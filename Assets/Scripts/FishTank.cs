@@ -21,6 +21,8 @@ public class FishTank : MonoBehaviour
     [SerializeField]
     private Transform bobberHookTransform;
     private BobberEffects bobScript;
+    [SerializeField]
+    private Transform waterLevel;
 
     private FishSO[] loadedFishSO;
     private List<Fish> fishPool;
@@ -140,7 +142,10 @@ public class FishTank : MonoBehaviour
             return null;
 
         Fish newFish = GameObject.Instantiate(fishPrefab, transform.position + Random.insideUnitSphere * 2, transform.rotation, transform).GetComponent<Fish>();
+        if (newFish.transform.position.y + 0.05f >= waterLevel.position.y)      // Push fish down a bit if it spawns too high
+            newFish.transform.position += Vector3.down;
         // So rn im not sure if start will be called at instantiation, or after this function finishes. I guess ill find out and update this later
+        // Edit: ok oh god oh fuck Start() is called later this kind of screws up some stuff. I dont think i can use Awake tho if i want to be able to disable scripts
         newFish.ScaleMod = ScaleMod;
         newFish.SizeUnits = SizeUnits;
         newFish.Initialize(loadedFishSO[Random.Range(0, loadedFishSO.Length)]);
@@ -153,6 +158,9 @@ public class FishTank : MonoBehaviour
         fm.wanderPoint2 = fm.transform.position - (Vector3.left * invert) * (wanderInitialDist + Random.Range(wanderRandomDistRange.x, wanderRandomDistRange.y));
         fm.swimSpeed += Random.Range(swimSpeedModRandomRange.x, swimSpeedModRandomRange.y);      // Lot of random calls here per fish
         fm.wiggleSpeed += Random.Range(wiggleSpeedModRandomRange.x, wiggleSpeedModRandomRange.y);
+
+        //newFish.GetComponent<FishColor>().UnderWater = true;            // let fish know its underwater  (ok so weird behaviour? this actually sets the fishes og color to the water color)
+                                                                          // (Therefore Start() on the component script only runs after this function is finished running)
 
         return newFish;
     }
@@ -204,7 +212,7 @@ public class FishTank : MonoBehaviour
     // Interested fish becomes catchable
     private float stateBecomeCatchable()
     {
-        if(Random.value > fakeoutChance || fakeoutCount >= maxCatchFakeouts)
+        if(Random.value > fakeoutChance / (fakeoutCount + 1) || fakeoutCount >= maxCatchFakeouts)
         {
             state = TankState.Catchable;
             bobScript.DoBob(true);
