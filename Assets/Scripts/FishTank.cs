@@ -71,6 +71,12 @@ public class FishTank : MonoBehaviour
     [SerializeField]
     private double timeAtNextEvent;
 
+    // debug list
+    [SerializeField]
+    private bool debugMode = false;
+    [SerializeField]
+    private Fish[] fishList;
+
     private enum TankState
     {
         Empty,
@@ -109,6 +115,9 @@ public class FishTank : MonoBehaviour
         // loop to occasionally make fish active and/or catchable
         CheckUpdateState();
 
+        // debug 
+        if(debugMode)
+            fishList = fishPool.ToArray();
     }
 
     // Just a way to start fish states
@@ -125,7 +134,7 @@ public class FishTank : MonoBehaviour
         if (state == TankState.Catchable && interestedFish != null)
         {
             Fish outp = interestedFish;
-            fishPool.Remove(outp);
+            Debug.Log($"Removed {outp}? {fishPool.Remove(outp)}");
 
             // manybe send a message that a fish was caught
             timeAtNextEvent = Time.fixedTime + stateCaughtFish();
@@ -134,6 +143,23 @@ public class FishTank : MonoBehaviour
 
         timeAtNextEvent = Time.fixedTime + stateScareFish();
         return null;
+    }
+
+    // Remove and return a random fish that is not interested
+    // Might remove the random portion to somehwete else later
+    public Fish RemoveRandomFish()
+    {
+        List<Fish> randPool = new List<Fish>(fishPool);         // Filter out interested fish
+        randPool.Remove(interestedFish);
+        Fish randChosen =  randPool[Random.Range(0, randPool.Count)];       // Choose one randomly (todo: less random-based choice)
+
+        fishPool.Remove(randChosen);            // Remove fish from actual pool, prevent it from being interested
+        return randChosen;
+    }
+
+    public void AddFish(Fish newfish)
+    {
+        fishPool.Add(newfish);
     }
 
     private Fish InitializeNewFish()

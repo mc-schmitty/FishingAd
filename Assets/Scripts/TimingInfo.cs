@@ -16,9 +16,17 @@ public class TimingInfo : MonoBehaviour
     [SerializeField]
     private float fishLingerSeconds = 1.5f;
 
+    public static float FishLingerBountyBonusSeconds;
+    [SerializeField]
+    private float fishLingerBountyBonusSeconds = 0.5f;
+
     public static float FishReturnSeconds;
     [SerializeField]
     private float fishReturnSeconds = 0.5f;
+
+    public static float FishShootDelaySeconds;
+    [SerializeField]
+    private float fishShootDelaySeconds = 0.4f;
 
     private static TimingInfo tsto;
 
@@ -31,6 +39,8 @@ public class TimingInfo : MonoBehaviour
         FishPulledSeconds = fishPulledSeconds;
         FishLingerSeconds = fishLingerSeconds;
         FishReturnSeconds = fishReturnSeconds;
+        FishShootDelaySeconds = fishShootDelaySeconds;
+        FishLingerBountyBonusSeconds = fishLingerBountyBonusSeconds;
     }
 
 }

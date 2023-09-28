@@ -51,6 +51,12 @@ public class FishMovement : MonoBehaviour
         }
     }
 
+    // Does the fish have a move order
+    public bool IsMoving()
+    {
+        return wanderCoroutine != null;
+    }
+
     // Start moving to specified position (cancels wander)
     public void StartMoveToLocation(Vector3 position)
     {
@@ -83,11 +89,12 @@ public class FishMovement : MonoBehaviour
         // Have fish face the right or left side depending on the position its moving to
         sr.flipX = (pos - transform.position).x > 0;
 
-        while (!Mathf.Approximately(Vector3.Distance(transform.position, pos), 0))
+        while (Vector3.Distance(transform.position, pos) > 0.0001f)     // Used to use Mathf.Approximately but it doesnt work reliably
         {
             transform.position = Vector3.MoveTowards(transform.position, pos, swimSpeed * Time.deltaTime);
             yield return null;
         }
+        wanderCoroutine = null;
     }
 
     // Move between two locations, updating coroutine variable
@@ -96,7 +103,7 @@ public class FishMovement : MonoBehaviour
         // Have fish face the right or left side depending on the position its moving to
         sr.flipX = (pos1 - transform.position).x > 0;
 
-        while (!Mathf.Approximately(Vector3.Distance(transform.position, pos1), 0))
+        while (Vector3.Distance(transform.position, pos1) > 0.0001f)
         {
             transform.position = Vector3.MoveTowards(transform.position, pos1, swimSpeed * Time.deltaTime);
             yield return null;

@@ -13,6 +13,7 @@ public class Fish : MonoBehaviour
     public float Length;
     public float Height;
     public float Points;
+    public float Bounty;
 
     [SerializeField]
     private FishSO fishStats;
@@ -46,6 +47,7 @@ public class Fish : MonoBehaviour
            Medium at half: 25 + 12.5 * (1 + 50%) = idk prob around 25 + 19 ~= 44?
            idk how i like this basically the base points are the biggest deal and the size bonus isnt when its usually the other way in fishing */
         Points = fishStats.basePoints + fishStats.basePoints * 2 * (Mathf.InverseLerp(fishStats.minSize, fishStats.maxSize, Length));
+        Bounty = 0;     // Fish are born innocent
     }
 
     private void ScaleSize()

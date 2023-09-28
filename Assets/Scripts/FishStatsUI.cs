@@ -45,10 +45,10 @@ public class FishStatsUI : MonoBehaviour
 
         yield return null;      // need time to let the fish get in position
         fish.transform.position = new Vector3(fish.transform.position.x, fish.transform.position.y - fish.Height/2 * 0.01f, fish.transform.position.z);     // Getting weird issue with NaN, hope this fixes it
-        Debug.Log("yPos: " + fishNameText.rectTransform.position.y);
-        Debug.Log("adding: " + (fishNameText.rectTransform.rect.height + fish.Height * 10));
+        //Debug.Log("yPos: " + fishNameText.rectTransform.position.y);
+        //Debug.Log("adding: " + (fishNameText.rectTransform.rect.height + fish.Height * 10));
         fishSizeText.rectTransform.localPosition = fishNameText.rectTransform.localPosition + Vector3.down * (fishNameText.rectTransform.rect.height + fish.Height * 10 + 30);  // magic numbers to make the ui look kinda good
-        yield return new WaitForSeconds(TimingInfo.FishLingerSeconds - Time.deltaTime);     // then remove some delay to account for the waiting above
+        yield return new WaitForSeconds(TimingInfo.FishLingerSeconds + (fish.Bounty > 0 ? TimingInfo.FishLingerBountyBonusSeconds : 0)  - Time.deltaTime);     // then remove some delay to account for the waiting above
         menuAnim.SetTrigger("bounceIn");
         //transform.localScale = Vector3.zero;
     }

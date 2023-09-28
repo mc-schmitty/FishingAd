@@ -35,18 +35,18 @@ public class MoveToTankIcon : MonoBehaviour
     [Obsolete("Method now uses FishingRod.FishCaught delegate")]
     public void MoveFishToIcon(Transform fish)
     {
-        StartCoroutine(MoveToIcon(fish, tankIconTransform, TimingInfo.FishReturnSeconds));
+        StartCoroutine(MoveToIcon(fish, tankIconTransform, TimingInfo.FishReturnSeconds, false));
     }
 
     private void MoveFishToIcon(Fish fish)
     {
-        StartCoroutine(MoveToIcon(fish.transform, tankIconTransform, TimingInfo.FishReturnSeconds));
+        StartCoroutine(MoveToIcon(fish.transform, tankIconTransform, TimingInfo.FishReturnSeconds, fish.Bounty > 0));
     }
 
     // Smoothly lerp fish to tank icon
-    IEnumerator MoveToIcon(Transform fish, RectTransform icon, float timeToComplete)
+    IEnumerator MoveToIcon(Transform fish, RectTransform icon, float timeToComplete, bool bounty)
     {
-        yield return new WaitForSeconds(TimingInfo.FishPulledSeconds + TimingInfo.FishLingerSeconds);  // Wait until fish is finished showing up
+        yield return new WaitForSeconds(TimingInfo.FishPulledSeconds + TimingInfo.FishLingerSeconds + (bounty ? TimingInfo.FishLingerBountyBonusSeconds : 0));  // Wait until fish is finished showing up
 
         StartCoroutine(FishEnterAnimation(fish));
 
