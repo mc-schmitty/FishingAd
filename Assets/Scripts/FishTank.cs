@@ -134,9 +134,8 @@ public class FishTank : MonoBehaviour
         if (state == TankState.Catchable && interestedFish != null)
         {
             Fish outp = interestedFish;
-            Debug.Log($"Removed {outp}? {fishPool.Remove(outp)}");
-
-            // manybe send a message that a fish was caught
+            fishPool.Remove(outp);
+            // message that says fish was caught is in FishingRod
             timeAtNextEvent = Time.fixedTime + stateCaughtFish();
             return outp;
         }

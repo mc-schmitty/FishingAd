@@ -36,6 +36,16 @@ public class FishingRod : MonoBehaviour
     private float delay;
     private bool firstCastFlag;
 
+    private void OnEnable()
+    {
+        FishBounty.ShotByFish += GetStunnedFromShot;
+    }
+
+    private void OnDisable()
+    {
+        FishBounty.ShotByFish -= GetStunnedFromShot;
+    }
+
     void Start()
     {
         IsCast = false;
@@ -45,7 +55,7 @@ public class FishingRod : MonoBehaviour
     // Temp update
     private void Update()
     {
-        
+        /*
         if (delay <= 0 && Input.GetMouseButtonDown(0))
         {
             if (IsCast)
@@ -53,8 +63,19 @@ public class FishingRod : MonoBehaviour
             else
                 CastLine();
         }
-
+        */
         delay = Mathf.Max(delay - Time.deltaTime, 0);
+    }
+
+    public void RodInteract()
+    {
+        if(delay <= 0)
+        {
+            if (IsCast)
+                PullLine();
+            else
+                CastLine();
+        }
     }
 
     private void PullLine()
@@ -147,6 +168,21 @@ public class FishingRod : MonoBehaviour
         caughtFish.transform.position = fishStopPoint.position;         // Set fish to point on screen 
         
         //yield return new WaitForSeconds(1.5f);
+    }
+
+    private void GetStunnedFromShot(Fish fish, float bounty)
+    {
+        // have some collision checking later, to see if we actuallly got hit
+        StartCoroutine(GetStunnedFromShot());
+    }
+
+    private IEnumerator GetStunnedFromShot()
+    {
+        yield return new WaitForSeconds(TimingInfo.FishShootDelaySeconds);
+
+        // stunned effect duration in RandomMovement
+        delay += 0.3f;
+
     }
 
 }
