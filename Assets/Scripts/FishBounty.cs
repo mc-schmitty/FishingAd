@@ -75,7 +75,7 @@ public class FishBounty : MonoBehaviour
 
         ShotByFish?.Invoke(shooter, pointLoss);          // Invoke being shot
 
-        fishAggression -= shootPoints;                  // Once again number not confirmed, fish takes out some aggression
+        fishAggression = Mathf.Max(fishAggression - shootPoints, 0);                  // Once again number not confirmed, fish takes out some aggression
     }
 
     private void CalculateAggression()
