@@ -19,18 +19,24 @@ public class FishStatsUI : MonoBehaviour
 
     private void OnEnable()
     {
-        FishingRod.FishCaught += fish => StartCoroutine(DisplayFishStats(fish));
+        FishingRod.FishCaught += ShowFishStats;
     }
 
-    private void OnDisable()        // uh i don't actually know if this linq unsubscribe will properly reference the subscribe function thing it made before
+    private void OnDisable()
     {
-        FishingRod.FishCaught -= fish => StartCoroutine(DisplayFishStats(fish));
+        //FishingRod.FishCaught -= fish => StartCoroutine(DisplayFishStats(fish));      // This line doesn't properly unsubscribe method
+        FishingRod.FishCaught -= ShowFishStats;
     }
 
     private void Start()
     {
         ogScale = transform.localScale;
         //transform.localScale = Vector3.zero;
+    }
+
+    private void ShowFishStats(Fish fish)
+    {
+        StartCoroutine(DisplayFishStats(fish));
     }
 
     IEnumerator DisplayFishStats(Fish fish)

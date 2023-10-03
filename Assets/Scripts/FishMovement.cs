@@ -60,9 +60,13 @@ public class FishMovement : MonoBehaviour
     // Start moving to specified position (cancels wander)
     public void StartMoveToLocation(Vector3 position)
     {
-        if(wanderCoroutine != null)
+        StartMoveToLocation(position, 0);
+    }
+    public void StartMoveToLocation(Vector3 position, float extraSpeed)
+    {
+        if (wanderCoroutine != null)
             StopCoroutine(wanderCoroutine);
-        wanderCoroutine = StartCoroutine(MoveToLocation(position));
+        wanderCoroutine = StartCoroutine(MoveToLocation(position, extraSpeed));
     }
 
     // Continue wandering between point 1 and point 2 (cancels previous movement)
@@ -84,14 +88,14 @@ public class FishMovement : MonoBehaviour
 
 
     // Move to a singular location, then stop.
-    private IEnumerator MoveToLocation(Vector3 pos)
+    private IEnumerator MoveToLocation(Vector3 pos, float bonusSpeed)
     {
         // Have fish face the right or left side depending on the position its moving to
         sr.flipX = (pos - transform.position).x > 0;
 
         while (Vector3.Distance(transform.position, pos) > 0.0001f)     // Used to use Mathf.Approximately but it doesnt work reliably
         {
-            transform.position = Vector3.MoveTowards(transform.position, pos, swimSpeed * Time.deltaTime);
+            transform.position = Vector3.MoveTowards(transform.position, pos, (swimSpeed + bonusSpeed) * Time.deltaTime);
             yield return null;
         }
         wanderCoroutine = null;
@@ -105,7 +109,7 @@ public class FishMovement : MonoBehaviour
 
         while (Vector3.Distance(transform.position, pos1) > 0.0001f)
         {
-            transform.position = Vector3.MoveTowards(transform.position, pos1, swimSpeed * Time.deltaTime);
+            transform.position = Vector3.MoveTowards(transform.position, pos1, (swimSpeed) * Time.deltaTime);
             yield return null;
         }
 

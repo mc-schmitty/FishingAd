@@ -1,11 +1,15 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using Random = UnityEngine.Random;
 
 public class FishTank : MonoBehaviour
 {
     public static FishTank fishTank;
+    public static event Action<float> FishMissEarly;
+    public static event Action<float> FishMissLate;
+    public static event Action<bool> TriggerFishFrenzy;
 
     // Collection that holds fish
     // Should populate and depopulate
@@ -53,6 +57,9 @@ public class FishTank : MonoBehaviour
     [SerializeField]
     private int maxCatchFakeouts = 2;
     private int fakeoutCount;
+    [SerializeField]
+    private float lateMissWindow = 1.5f;
+    private float missTimer;
 
     [SerializeField]
     private float wanderInitialDist;
@@ -63,6 +70,23 @@ public class FishTank : MonoBehaviour
     [SerializeField]
     private Vector2 wiggleSpeedModRandomRange;
 
+    [Tooltip("How many fish needed to catch before triggering a frenzy")]
+    public int fishToTriggerFrenzy = 10;
+    [SerializeField]
+    [Tooltip("How long would it take to trigger a frenzy without catching a fish")]
+    private float fishFrenzyBuildupSeconds = 120f;
+    [SerializeField]
+    private float fishFrenzyDurationSeconds = 20f;
+    [SerializeField]
+    private float fishFrenzyTimeDivider = 2f;
+    private float fishFrenzyDiv = 1f;
+    private float fishFrenzyHalfDiv = 1f;
+    [SerializeField]
+    private float fishFrenzySpeedBoost = 1f;
+    public float fishFrenzyMeter;
+    private float fishFrenzyTimer;
+    [SerializeField]
+    private float rodRecastTime = 3.8f;
 
     [SerializeField]
     private Fish interestedFish;
@@ -100,6 +124,8 @@ public class FishTank : MonoBehaviour
         loadedFishSO = Resources.LoadAll<FishSO>("Fish");
         fishPool = new List<Fish>();
         bobScript = bobberHookTransform.GetComponentInParent<BobberEffects>();
+        fishFrenzyMeter = 0;        // Reset fish frenzy meter
+        fishFrenzyDiv = 1;
 
         // Initialize starting fish
         for (int n = 0; n < initialPoolSize; n++)
@@ -114,6 +140,8 @@ public class FishTank : MonoBehaviour
     {
         // loop to occasionally make fish active and/or catchable
         CheckUpdateState();
+        missTimer = Mathf.Max(0, missTimer - Time.deltaTime);
+        UpdateFishFrenzy();
 
         // debug 
         if(debugMode)
@@ -137,7 +165,18 @@ public class FishTank : MonoBehaviour
             fishPool.Remove(outp);
             // message that says fish was caught is in FishingRod
             timeAtNextEvent = Time.fixedTime + stateCaughtFish();
+            fishFrenzyMeter += (fishFrenzyTimer == 0 ? 1f : 0.25f);      // increase fish frenzy meter by 1, decreased if frenzy active
             return outp;
+        }
+        else if(missTimer > 0)
+        {
+            // Tried to catch fish too late
+            FishMissLate?.Invoke(lateMissWindow - missTimer);    // float: how many seconds late was the catch
+        }
+        else if(interestedFish != null)
+        {
+            // Tried to catch fish too early (also repeat comparison but it makes code clearer)
+            FishMissEarly?.Invoke((float)timeAtNextEvent - Time.fixedTime);
         }
 
         timeAtNextEvent = Time.fixedTime + stateScareFish();
@@ -196,7 +235,7 @@ public class FishTank : MonoBehaviour
         if (Time.fixedTime > timeAtNextEvent)
         {
             float newDelay = 0;
-
+            TankState tempState = state;
             switch(state){
                 case TankState.Disabled:
                     newDelay = 1f;
@@ -214,8 +253,41 @@ public class FishTank : MonoBehaviour
                     newDelay = stateStopCatchable();
                     break;
             }
-            
+            Debug.Log($"Next event in {newDelay} seconds. ({tempState}->{state})");
             timeAtNextEvent = Time.fixedTime + newDelay;
+        }
+    }
+
+    // Deals with fish frenzy and stuff
+    private void UpdateFishFrenzy()
+    {
+        // buildup and startfrenzy
+        if(fishFrenzyTimer <= 0)
+        {
+            fishFrenzyMeter += fishToTriggerFrenzy / fishFrenzyBuildupSeconds * Time.deltaTime;         // Slowly buildup fishFrenzyMeter
+            if (fishFrenzyMeter >= fishToTriggerFrenzy)             // Fishmeter full now
+            {
+                fishFrenzyMeter = 0;
+                fishFrenzyDiv = fishFrenzyTimeDivider;
+                fishFrenzyHalfDiv = fishFrenzyTimeDivider / 2;
+                fishFrenzyTimer = fishFrenzyDurationSeconds;
+                if(state == TankState.Empty && timeAtNextEvent - Time.fixedTime > 4)        // accelerate the first catch in fish frenzy
+                    timeAtNextEvent = Time.fixedTime + 4;
+                TriggerFishFrenzy?.Invoke(true);
+            }
+
+        }
+        // count down and stop frenzy
+        else
+        {
+            fishFrenzyTimer -= Time.deltaTime;
+            if(fishFrenzyTimer <= 0)
+            {
+                fishFrenzyTimer = 0;
+                fishFrenzyDiv = 1;
+                fishFrenzyHalfDiv = 1;
+                TriggerFishFrenzy?.Invoke(false);
+            }
         }
     }
 
@@ -229,15 +301,22 @@ public class FishTank : MonoBehaviour
 
         state = TankState.Interested;
         interestedFish = fishPool[Random.Range(0, fishPool.Count)];        // Choose random fish (might be expanded on later)
-        interestedFish.GetComponent<FishMovement>().StartMoveToLocation(bobberHookTransform.position);
+        interestedFish.GetComponent<FishMovement>().StartMoveToLocation(bobberHookTransform.position, fishFrenzyTimer > 0 ? fishFrenzySpeedBoost : 0);
         fakeoutCount = 0;          // reset bob fakeouts
-        return Random.Range(timeRangeBecomeCatchable.x, timeRangeBecomeCatchable.y);
+        return Random.Range(timeRangeBecomeCatchable.x / fishFrenzyHalfDiv, timeRangeBecomeCatchable.y / fishFrenzyHalfDiv);
     }
 
     // Interested fish becomes catchable
     private float stateBecomeCatchable()
     {
-        if(Random.value > fakeoutChance / (fakeoutCount + 1) || fakeoutCount >= maxCatchFakeouts)
+        // failsafe to push a fish to the hook if its too slow
+        if (interestedFish.GetComponent<FishMovement>().IsMoving())
+        {
+            interestedFish.transform.position = bobberHookTransform.position;
+            Debug.Log($"Teleported fish to {bobberHookTransform.position}");
+        }
+
+        if (Random.value > fakeoutChance / (fakeoutCount + 1) || fakeoutCount >= maxCatchFakeouts || fishFrenzyTimer > 0)     // avoid fakeouts if frenzying
         {
             state = TankState.Catchable;
             bobScript.DoBob(true);
@@ -248,26 +327,29 @@ public class FishTank : MonoBehaviour
             state = TankState.Interested;
             bobScript.DoBob(false);             // fake bob occurs
             fakeoutCount++;
-            return Random.Range(timeRangeRepeatBecomeCatchable.x, timeRangeRepeatBecomeCatchable.y);        // go to regular delay as if fish is staying after miss
+            return Random.Range(timeRangeRepeatBecomeCatchable.x / fishFrenzyHalfDiv, timeRangeRepeatBecomeCatchable.y / fishFrenzyHalfDiv);        // go to regular delay as if fish is staying after miss
         }
     }
 
     // Interested fish stops being catchable, either stays or runs away
     private float stateStopCatchable()
     {
+        // catchable fish missed, start visual timer
+        missTimer = lateMissWindow;
+
         // have chance fish returns to being interested and chance it flees
-        if(Random.value > leaveHookChance)
+        if (Random.value > leaveHookChance)
         {
             state = TankState.Interested;
 
-            return Random.Range(timeRangeRepeatBecomeCatchable.x, timeRangeRepeatBecomeCatchable.y);  
+            return Random.Range(timeRangeRepeatBecomeCatchable.x / fishFrenzyHalfDiv, timeRangeRepeatBecomeCatchable.y / fishFrenzyHalfDiv);  
         }
         else
         {
             state = TankState.Empty;
             interestedFish.GetComponent<FishMovement>().ResumeWander();
             interestedFish = null;
-            return Random.Range(timeRangeChooseInterestedFailure.x, timeRangeChooseInterestedFailure.y);
+            return Random.Range(timeRangeChooseInterestedFailure.x / fishFrenzyDiv, timeRangeChooseInterestedFailure.y / fishFrenzyDiv);
         }
     }
 
@@ -280,7 +362,7 @@ public class FishTank : MonoBehaviour
             interestedFish.GetComponent<FishMovement>().ResumeWander();
             interestedFish = null;
         }
-        return Random.Range(timeRangeChooseInterestedFailure.x, timeRangeChooseInterestedFailure.y);
+        return Mathf.Max(Random.Range(timeRangeChooseInterestedFailure.x / fishFrenzyDiv, timeRangeChooseInterestedFailure.y / fishFrenzyDiv), rodRecastTime);
     }
 
 
@@ -290,7 +372,7 @@ public class FishTank : MonoBehaviour
         state = TankState.Empty;
         interestedFish.GetComponent<FishMovement>().AttatchToBobber(bobberHookTransform);
         interestedFish = null;
-        return Random.Range(timeRangeChooseInterestedSuccess.x, timeRangeChooseInterestedSuccess.y);
+        return Mathf.Max(Random.Range(timeRangeChooseInterestedSuccess.x / fishFrenzyDiv, timeRangeChooseInterestedSuccess.y / fishFrenzyDiv), rodRecastTime);
     }
 
 
