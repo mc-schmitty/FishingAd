@@ -20,6 +20,9 @@ public class FishingRod : MonoBehaviour
     private Animator reelAnim;
 
     [SerializeField]
+    private AudioSource reelSound;
+
+    [SerializeField]
     private Rigidbody bobber;
     [SerializeField]
     private Vector3 bobberCastPoint;
@@ -84,6 +87,7 @@ public class FishingRod : MonoBehaviour
         bobber.useGravity = true;
         bobber.AddForce(bobberPullForce, ForceMode.Impulse);
         rodAnim.SetTrigger("PullBack");
+        reelSound.Play();
 
         // Try to catch fish
         Fish caughtFish = FishTank.fishTank.TryCatch();

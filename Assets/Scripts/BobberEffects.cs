@@ -10,6 +10,12 @@ public class BobberEffects : MonoBehaviour
     private ParticleSystem smallSplash;
     [SerializeField]
     private Animator anim;
+    [SerializeField]
+    private AudioSource audioSource;
+    [SerializeField]
+    private AudioClip smallSplashSound;
+    [SerializeField]
+    private AudioClip largeSplashSound;
 
 
     private void Start()
@@ -26,11 +32,15 @@ public class BobberEffects : MonoBehaviour
         {
             bigSplash.Play();
             anim.SetTrigger("bigBob");
+            audioSource.clip = largeSplashSound;
+            audioSource.Play();
         }
         else
         {
             smallSplash.Play();
             anim.SetTrigger("smallBob");
+            audioSource.clip = smallSplashSound;
+            audioSource.Play();
         }
     }
 

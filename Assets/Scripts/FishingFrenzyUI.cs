@@ -15,6 +15,8 @@ public class FishingFrenzyUI : MonoBehaviour
     private TextMeshProUGUI text1;
     [SerializeField]
     private TextMeshProUGUI text2;
+    [SerializeField]
+    private AudioSource frenzySource;
     private Vector3 startingPos;
 
     private void OnEnable()
@@ -57,12 +59,15 @@ public class FishingFrenzyUI : MonoBehaviour
     IEnumerator FadeInOut(bool fadein, float time)
     {
         doMove = true;
+        float audioVolume = frenzySource.volume;
 
         int min, max;
         if (fadein)         // Just determine whether we are fading in or out
         {
             min = 0;
             max = 1;        // prob a cleverer way of doing it than this
+
+            frenzySource.Play();    // play audiosource
         }
         else
         {
@@ -78,11 +83,17 @@ public class FishingFrenzyUI : MonoBehaviour
             text1.color = newCol;
             text2.color = newCol;
 
+            frenzySource.volume = alphaVal * audioVolume;
+
             timer += Time.deltaTime;
             yield return null;
         }
 
-        if (!fadein)            // Finally we want the movement to stop
+        frenzySource.volume = audioVolume;
+        if (!fadein)
+        {
             doMove = false;
+            frenzySource.Stop();
+        }           // Finally we want the movement to stop
     }
 }

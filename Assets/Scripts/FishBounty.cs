@@ -17,6 +17,8 @@ public class FishBounty : MonoBehaviour
     private Transform[] shootingPoints;
     [SerializeField]
     private ParticleSystem[] particles;
+    [SerializeField]
+    private AudioSource[] audioSources;
 
     [SerializeField]
     private float bountyMultiplier = 1.5f;
@@ -72,6 +74,7 @@ public class FishBounty : MonoBehaviour
         float pointLoss = 10 + fishAggression + shootPoints;            // Subject to change, want it to be a smaller number 
         shooter.Bounty += pointLoss * bountyMultiplier;
         particles[particleIndex].Play();
+        audioSources[particleIndex].Play();
 
         ShotByFish?.Invoke(shooter, pointLoss);          // Invoke being shot
 
