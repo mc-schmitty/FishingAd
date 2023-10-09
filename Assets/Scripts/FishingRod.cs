@@ -185,7 +185,7 @@ public class FishingRod : MonoBehaviour
         yield return new WaitForSeconds(TimingInfo.FishShootDelaySeconds);
 
         // stunned effect duration in RandomMovement
-        delay += 0.3f;
+        //delay += 0.3f;        // rn the stun is unavoidable and annoying so removing it until i add a way to avoid getting shot
 
     }
 
