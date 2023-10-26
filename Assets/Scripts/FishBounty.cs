@@ -111,6 +111,7 @@ public class FishBounty : MonoBehaviour
         Fish agroFish = fishTank.RemoveRandomFish();
         Debug.Log($"Gonna shoot with fish {agroFish.FishName}");
         FishMovement fm = agroFish.GetComponent<FishMovement>();
+        FishRadarPingEffect pinger = agroFish.GetComponent<FishRadarPingEffect>();
 
         // Randomly choose shooting point
         int pointIndex = Random.Range(0, shootingPoints.Length);
@@ -126,6 +127,8 @@ public class FishBounty : MonoBehaviour
         // Fish has reached position, shoot
         Shoot(agroFish, pointIndex);
         yield return new WaitForSeconds(1f);  // Fish lingers for a moment
+        pinger.PingRate += 0.1f;              // Enable fish pinging and up its ping rate
+        pinger.Enable();
 
         // Now make fish swim to other point
         fm.StartMoveToLocation(endPoint);

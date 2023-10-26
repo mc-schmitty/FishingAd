@@ -167,8 +167,9 @@ public class FishingRod : MonoBehaviour
         // todo: expand on fish catching, prob send the fish to heaven or smth
         caughtFish.transform.parent = null;
         caughtFish.transform.rotation = Quaternion.identity;
-        FishMovement fm = caughtFish.GetComponent<FishMovement>();
+        FishMovement fm = caughtFish.GetComponent<FishMovement>();      // Disable wiggling
         fm.doWiggle = false;
+        caughtFish.GetComponent<FishRadarPingEffect>().Disable();       // Disable pinging effect
         caughtFish.transform.position = fishStopPoint.position;         // Set fish to point on screen 
         
         //yield return new WaitForSeconds(1.5f);

@@ -92,6 +92,7 @@ public class FishMovement : MonoBehaviour
     {
         // Have fish face the right or left side depending on the position its moving to
         sr.flipX = (pos - transform.position).x > 0;
+        sr.GetComponent<FishRadarPingEffect>().flipFishSprite(sr.flipX);
 
         while (Vector3.Distance(transform.position, pos) > 0.0001f)     // Used to use Mathf.Approximately but it doesnt work reliably
         {
@@ -106,6 +107,7 @@ public class FishMovement : MonoBehaviour
     {
         // Have fish face the right or left side depending on the position its moving to
         sr.flipX = (pos1 - transform.position).x > 0;
+        sr.GetComponent<FishRadarPingEffect>().flipFishSprite(sr.flipX);        // Dont like FishMovement having direct connection to PingEffect, maybe change to FishTank Manager later
 
         while (Vector3.Distance(transform.position, pos1) > 0.0001f)
         {

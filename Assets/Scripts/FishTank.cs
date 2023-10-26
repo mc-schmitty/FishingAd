@@ -224,7 +224,11 @@ public class FishTank : MonoBehaviour
         fm.wiggleSpeed += Random.Range(wiggleSpeedModRandomRange.x, wiggleSpeedModRandomRange.y);
 
         //newFish.GetComponent<FishColor>().UnderWater = true;            // let fish know its underwater  (ok so weird behaviour? this actually sets the fishes og color to the water color)
-                                                                          // (Therefore Start() on the component script only runs after this function is finished running)
+        // (Therefore Start() on the component script only runs after this function is finished running)
+
+        FishRadarPingEffect frpe = newFish.GetComponent<FishRadarPingEffect>();
+        frpe.UpdateSprite();
+        frpe.Disable();
 
         return newFish;
     }

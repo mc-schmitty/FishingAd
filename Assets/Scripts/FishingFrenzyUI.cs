@@ -89,6 +89,8 @@ public class FishingFrenzyUI : MonoBehaviour
             yield return null;
         }
 
+        text1.color = new Color(text1.color.r, text1.color.g, text1.color.b, max);
+        text2.color = new Color(text2.color.r, text2.color.g, text2.color.b, max);      // Set color and audio to final values
         frenzySource.volume = audioVolume;
         if (!fadein)
         {
