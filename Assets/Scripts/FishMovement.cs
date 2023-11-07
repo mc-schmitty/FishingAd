@@ -21,8 +21,8 @@ public class FishMovement : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        sr = GetComponent<SpriteRenderer>();
-        ResumeWander();
+        if(TryGetComponent<SpriteRenderer>(out sr))         // Only make fish move if it actually has a sprite renderer
+            ResumeWander();
     }
 
     // Update is called once per frame
