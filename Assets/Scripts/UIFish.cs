@@ -12,6 +12,8 @@ namespace FishHistory
         private Image fishImage;
         [SerializeField]
         private float scalingFactor = 1f;
+        [SerializeField]
+        private bool interactable = true;
 
         private FishHistoryListNode previousNode;
 
@@ -28,6 +30,9 @@ namespace FishHistory
         // Load fish into frame
         private void HistoryButtonClicked(FishHistoryListNode node, FishHistory fishData)
         {
+            if (!interactable)      // Can make fish container static
+                return;
+
             // Make previous history item light up again
             if(previousNode != null)
             {
@@ -49,7 +54,7 @@ namespace FishHistory
             // prob do some screen scaling stuff here, ill do that later
             fishImage.rectTransform.sizeDelta = new Vector2(fishData.Length * scalingFactor, height * scalingFactor);
 
-            // Later animate fish
+            // Later animate fish (currently this is done automatically via attached FishMovement)
         }
     }
 }

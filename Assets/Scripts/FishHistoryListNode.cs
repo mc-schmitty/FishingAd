@@ -35,6 +35,8 @@ namespace FishHistory
         private TextMeshProUGUI fishBountyText;
         [SerializeField]
         private Button button;
+        [SerializeField]
+        private GameObject newRecordImg;
 
 
         public void ButtonClicked()
@@ -52,12 +54,17 @@ namespace FishHistory
             button.interactable = set;
         }
 
+        public void SetNewRecord(bool set)
+        {
+            newRecordImg.SetActive(set);
+        }
+
         private void UpdateNode()
         {
             fishNameText.text = fishData.Name;
-            fishSizeText.text = fishData.Length.ToString("n2") + " cm";
-            fishScoreText.text = fishData.Points.ToString("n1") + " pts";
-            fishBountyText.text = fishData.Bounty.ToString("n0") + " pts";
+            fishSizeText.text = $"{fishData.Length:n2} cm";
+            fishScoreText.text = $"{fishData.Points:n1} pts";
+            fishBountyText.text = $"+{fishData.Bounty:n0} bty";
         }
 
         

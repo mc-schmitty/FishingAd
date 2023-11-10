@@ -10,8 +10,6 @@ public class MoveToTankIcon : MonoBehaviour
     [SerializeField]
     private RectTransform tankIconTransform;
     [SerializeField]
-    private GameObject newText;
-    [SerializeField]
     private AnimationCurve smoothCurve;
     [SerializeField][Range(0f, 1f)]
     private float minScalePercentage = 0.2f;
@@ -71,7 +69,6 @@ public class MoveToTankIcon : MonoBehaviour
         }
 
         fish.gameObject.SetActive(false);
-        newText.SetActive(true);
     }
 
     IEnumerator FishEnterAnimation(Transform fish)

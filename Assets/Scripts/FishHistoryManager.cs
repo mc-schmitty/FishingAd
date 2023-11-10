@@ -1,9 +1,11 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace FishHistory
 {
+    [Serializable]
     public class FishHistory
     {
         public readonly string Name;
@@ -70,7 +72,11 @@ namespace FishHistory
             // Update ui history 
             FishHistoryListNode newNode = GameObject.Instantiate<FishHistoryListNode>(nodePrefab, nodeParent);
             newNode.FishData = fh;
+
+            // Check if record is new high score (and add it if it is)
+            newNode.SetNewRecord(FishHighScoreManager.Manager.TestNewRecord(fh));
         }
+
     }
 }
 
