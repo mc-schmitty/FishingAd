@@ -47,6 +47,8 @@ namespace FishHistory
         // Fish Catch UI Stuff
         [SerializeField]
         private GameObject newText;
+        [SerializeField]
+        private GameObject newHighscoreText;
 
         private void Awake()
         {
@@ -143,9 +145,12 @@ namespace FishHistory
 
         private IEnumerator EnableHighscoreNotification(bool bounty)
         {
+            newHighscoreText.SetActive(true);       // Have "New Highscore!" text appear in next fish catch 
+
             yield return new WaitForSeconds(TimingInfo.FishPulledSeconds + TimingInfo.FishLingerSeconds + (bounty ? TimingInfo.FishLingerBountyBonusSeconds : 0) + TimingInfo.FishReturnSeconds);
             // Fish has been stashed away
             newText.SetActive(true);
+            newHighscoreText.SetActive(false);  // Disable newhighscore for next fish
         }
     }
 }
