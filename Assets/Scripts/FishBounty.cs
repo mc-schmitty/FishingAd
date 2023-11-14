@@ -103,7 +103,8 @@ public class FishBounty : MonoBehaviour
         else
         {
             FishShotBlock?.Invoke(shooter, pointLoss);
-            fishAggression = Mathf.Min(fishAggression + angerPoints, maxFishAggression);    // If you block a shot, fish get even angrier            
+            //fishAggression = Mathf.Min(fishAggression + angerPoints, maxFishAggression);    // If you block a shot, fish get even angrier
+                                                                                              // Ok so this line of code leads to fish going crazy and shooting you every second >:(
             CalculateAggression();
         }
     }

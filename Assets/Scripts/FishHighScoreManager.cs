@@ -29,6 +29,15 @@ namespace FishHistory
         private TextMeshProUGUI totalFishCaughtText;
         private int totalFishCaught;
         [SerializeField]
+        private TextMeshProUGUI earlyFishMissesText;
+        private int earlyFishMisses;
+        [SerializeField]
+        private TextMeshProUGUI lateFishMissesText;
+        private int lateFishMisses;
+        [SerializeField]
+        private TextMeshProUGUI totalFishMissesText;
+        private int totalFishMisses;
+        [SerializeField]
         private TextMeshProUGUI totalNormalScoreText;
         private float totalNormalScore;
         [SerializeField]
@@ -40,6 +49,9 @@ namespace FishHistory
         [SerializeField]
         private TextMeshProUGUI totalPointsLostByFishText;
         private float totalPointsLostByFish;
+        [SerializeField]
+        private TextMeshProUGUI totalPointsBlockedText;
+        private float totalPointsBlocked;
         [SerializeField]
         private TextMeshProUGUI totalCombinedScoreText;
         private float totalCombinedScore;
@@ -62,12 +74,18 @@ namespace FishHistory
         {
             FishingRod.FishCaught += IncrementFishCounter;
             FishBounty.FishShotHit += IncrementPointLossCounter;
+            FishBounty.FishShotBlock += IncrementPointBlockedCounter;
+            FishTank.FishMissEarly += IncrementEarlyMissCounter;
+            FishTank.FishMissLate += IncrementLateMissCounter;
         }
 
         private void OnDisable()
         {
             FishingRod.FishCaught -= IncrementFishCounter;
             FishBounty.FishShotHit -= IncrementPointLossCounter;
+            FishBounty.FishShotBlock -= IncrementPointBlockedCounter;
+            FishTank.FishMissEarly -= IncrementEarlyMissCounter;
+            FishTank.FishMissLate -= IncrementLateMissCounter;
         }
 
         // Test if any records are broken, and add them if true
@@ -141,6 +159,31 @@ namespace FishHistory
             totalPointsLostByFish += pointsLost;
 
             UpdateStatText(totalPointsLostByFish, totalPointsLostByFishText, "n2");
+        }
+
+        private void IncrementPointBlockedCounter(Fish fish, float pointsLost)
+        {
+            totalPointsBlocked += pointsLost;
+
+            UpdateStatText(totalPointsBlocked, totalPointsBlockedText, "n2");
+        }
+
+        private void IncrementEarlyMissCounter(float missTiming)
+        {
+            earlyFishMisses += 1;
+            totalFishMisses += 1;       // Really dont need this variable, could just add early + late
+
+            UpdateStatText(earlyFishMisses, earlyFishMissesText);
+            UpdateStatText(totalFishMisses, totalFishMissesText);
+        }
+
+        private void IncrementLateMissCounter(float missTiming)
+        {
+            lateFishMisses += 1;
+            totalFishMisses += 1;       // Really dont need this variable, could just add early + late
+
+            UpdateStatText(lateFishMisses, lateFishMissesText);
+            UpdateStatText(totalFishMisses, totalFishMissesText);
         }
 
         private IEnumerator EnableHighscoreNotification(bool bounty)

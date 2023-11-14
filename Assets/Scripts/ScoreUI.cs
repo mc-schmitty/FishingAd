@@ -83,6 +83,7 @@ public class ScoreUI : MonoBehaviour
             addScoreText.color = new Color(addScoreText.color.r, addScoreText.color.g, addScoreText.color.b, Mathf.Lerp(0f, 1f, step));       // oh ok i had this from 0 - 255 but i guess it goes from 0 - 1 so lerp is pointless oops
             yield return null;
         }*/
+        textGui.gameObject.SetActive(true);
         textGui.color = new Color(textGui.color.r, textGui.color.g, textGui.color.b, 1);
 
         // wait for 2/4 time
@@ -96,5 +97,6 @@ public class ScoreUI : MonoBehaviour
         }
 
         textGui.color = new Color(textGui.color.r, textGui.color.g, textGui.color.b, 0);
+        textGui.gameObject.SetActive(false);
     }
 }

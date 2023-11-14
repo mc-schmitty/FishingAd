@@ -12,12 +12,20 @@ public class FishShotShield : MonoBehaviour
     [SerializeField]
     private float ftShieldMaxHP;
     private float ftShieldHP;
+    [SerializeField]
+    private float ftShieldRechargeTime = 10f;
+    [SerializeField]
+    private Image fishTankIconRecharge;
 
     [SerializeField]
     private Image shopMenuShield;
     [SerializeField]
     private float smShieldMaxHP;
     private float smShieldHP;
+    [SerializeField]
+    private float smShieldRechargeTime = 10f;
+    [SerializeField]
+    private Image shopMenuIconRecharge;
 
     [SerializeField]
     private Image personalShield;
@@ -27,10 +35,16 @@ public class FishShotShield : MonoBehaviour
     private float personalShieldMaxHP;
     private float psHP;
     [SerializeField]
+    private float personalShieldRechargeTime = 5f;
+    [SerializeField]
     [Range(0, 1)]
     private float psChargeTime = 0.25f;
     private float psRampUp;
     private bool psActivated;
+
+    [SerializeField]
+    [Tooltip("If true, menus close when they are broken.")]
+    private bool weakMenus = true;
 
     [SerializeField]
     private ParticleSystem[] regDamageSubPE;
@@ -81,12 +95,8 @@ public class FishShotShield : MonoBehaviour
             }
         }
         else {
-            psRampUp = Mathf.Max(psRampUp - Time.deltaTime, 0);
-
-            if(psRampUp <= 0)
-            {
-                DeactivatePShield();
-            }
+            psRampUp = 0;
+            DeactivatePShield();
         }
     }
 
@@ -110,6 +120,9 @@ public class FishShotShield : MonoBehaviour
                     // deactivate shield
                     DeactivateShopMenuShield();
                     shopMenuShield.color *= new Color(1, 1, 1, 0.1f);
+                    if(weakMenus)
+                        shopMenuShield.gameObject.SetActive(false);             // Kick you out of the menu
+                    StartCoroutine(RechargeShopMenuShield());
                 }
                 break;
             case 2:
@@ -120,6 +133,9 @@ public class FishShotShield : MonoBehaviour
                     // deactivate shield
                     DeactivateFishMenuShield();
                     fishTankShield.color *= new Color(1, 1, 1, 0.1f);
+                    if (weakMenus)
+                        fishTankShield.gameObject.SetActive(false);
+                    StartCoroutine(RechargeFishMenuShield());
                 }
                 break;
             case 3:
@@ -128,6 +144,7 @@ public class FishShotShield : MonoBehaviour
                 if(psHP <= 0)
                 {
                     DeactivatePShield();
+                    StartCoroutine(RechargePersonalShield());
                 }
                 break;
         }
@@ -300,5 +317,54 @@ public class FishShotShield : MonoBehaviour
         }
 
         return -1;      // invalid id, so health is negative (not 0)
+    }
+
+
+    // Reset shield health
+    private IEnumerator RechargePersonalShield()
+    {
+        yield return new WaitForSeconds(personalShieldRechargeTime);
+
+        psHP = personalShieldMaxHP;
+    }
+
+    private IEnumerator RechargeFishMenuShield()
+    {
+        float timer = 0;
+        fishTankIconRecharge.fillAmount = 1f;
+
+        while(timer < ftShieldRechargeTime)     // Deplete a darkened version of the icon
+        {
+            timer += Time.deltaTime;
+            fishTankIconRecharge.fillAmount = Mathf.InverseLerp(ftShieldRechargeTime, 0, timer);
+            yield return null;
+        }
+
+        fishTankIconRecharge.fillAmount = 0f;
+        ftShieldHP = ftShieldMaxHP;
+        fishTankShield.color *= new Color(1, 1, 1, 10);         // Restore color to what it was before breaking
+
+        if (GetActiveMenu() == 2)               // If menu is open, activate it
+            ActivateFishMenuShield();
+    }
+
+    private IEnumerator RechargeShopMenuShield()
+    {
+        float timer = 0;
+        shopMenuIconRecharge.fillAmount = 1f;
+
+        while (timer < smShieldRechargeTime)
+        {
+            timer += Time.deltaTime;
+            shopMenuIconRecharge.fillAmount = Mathf.InverseLerp(smShieldRechargeTime, 0, timer);
+            yield return null;
+        }
+
+        shopMenuIconRecharge.fillAmount = 0f;
+        smShieldHP = smShieldMaxHP;
+        shopMenuShield.color *= new Color(1, 1, 1, 10);
+
+        if (GetActiveMenu() == 1)       // reactivate shield even if menu is open
+            ActivateShopMenuShield();
     }
 }
