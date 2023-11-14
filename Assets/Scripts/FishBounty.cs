@@ -1,13 +1,16 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 public class FishBounty : MonoBehaviour
 {
-    public static event Action<Fish, float> ShotByFish;
+    public static event Action<Fish, float> FishShooting;
+    public static event Action<Fish, float> FishShotHit;
+    public static event Action<Fish, float> FishShotBlock;
 
     public static FishBounty fishBounty;        // May or may not end up using this
 
@@ -76,10 +79,33 @@ public class FishBounty : MonoBehaviour
         particles[particleIndex].Play();
         audioSources[particleIndex].Play();
 
-        ShotByFish?.Invoke(shooter, pointLoss);          // Invoke being shot
+        FishShooting?.Invoke(shooter, pointLoss);          // Invoke being shot
 
-        fishAggression = Mathf.Max(fishAggression - shootPoints, 0);                  // Once again number not confirmed, fish takes out some aggression
-        CalculateAggression();                           // Try to see if fish will shoot again
+        // Now we wait for the shot result first
+        if (FishShotShield.Manager != null)
+            StartCoroutine(ShotResult(shooter, shootPoints, pointLoss));
+        else        // Although if shields are disabled, return to regular behaviour
+        {
+            fishAggression = Mathf.Max(fishAggression - shootPoints, 0);                  // Once again number not confirmed, fish takes out some aggression
+            CalculateAggression();                           // Try to see if fish will shoot again
+        }
+    }
+
+    private IEnumerator ShotResult(Fish shooter, float angerPoints, float pointLoss)
+    {
+        yield return new WaitForSeconds(TimingInfo.FishShootDelaySeconds);
+        if (!FishShotShield.Manager.IsBlocking())
+        {
+            FishShotHit?.Invoke(shooter, pointLoss);
+            fishAggression = Mathf.Max(fishAggression - angerPoints, 0);                  // fish takes out some aggression and everything is all good
+            CalculateAggression();
+        }
+        else
+        {
+            FishShotBlock?.Invoke(shooter, pointLoss);
+            fishAggression = Mathf.Min(fishAggression + angerPoints, maxFishAggression);    // If you block a shot, fish get even angrier            
+            CalculateAggression();
+        }
     }
 
     private void CalculateAggression()

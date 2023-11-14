@@ -16,12 +16,12 @@ public class RandomMovement : MonoBehaviour
 
     private void OnEnable()
     {
-        FishBounty.ShotByFish += TriggerJiggle;
+        FishBounty.FishShotHit += TriggerJiggle;
     }
 
     private void OnDisable()
     {
-        FishBounty.ShotByFish -= TriggerJiggle;
+        FishBounty.FishShotHit -= TriggerJiggle;
     }
 
     // Failsafe if jiggle effect doesn't restore item back to normal, call once to set and later to reset
@@ -63,7 +63,7 @@ public class RandomMovement : MonoBehaviour
             vList[i] = Vector3.zero;
         }
 
-        yield return new WaitForSeconds(TimingInfo.FishShootDelaySeconds);
+        //yield return new WaitForSeconds(TimingInfo.FishShootDelaySeconds);
 
         while(timer < duration)
         {

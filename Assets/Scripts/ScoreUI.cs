@@ -18,13 +18,13 @@ public class ScoreUI : MonoBehaviour
     private void OnEnable()
     {
         FishingRod.FishCaught += AddFishCoin;
-        FishBounty.ShotByFish += LoseFishCoin;
+        FishBounty.FishShotHit += LoseFishCoin;
     }
 
     private void OnDisable()
     {
         FishingRod.FishCaught -= AddFishCoin;
-        FishBounty.ShotByFish -= LoseFishCoin;
+        FishBounty.FishShotHit -= LoseFishCoin;
     }
 
     void Start()
@@ -59,7 +59,7 @@ public class ScoreUI : MonoBehaviour
         }
         else if (oldScore > newScore)
         {
-            yield return new WaitForSeconds(TimingInfo.FishShootDelaySeconds);          // add timing later
+            //yield return new WaitForSeconds(TimingInfo.FishShootDelaySeconds);          // add timing later
 
             StartCoroutine(AddTextFadeinout(timeToUpdate, removeScoreText));
         }

@@ -41,13 +41,13 @@ namespace FishGame
 
         private void OnEnable()
         {
-            FishBounty.ShotByFish += OnFishShot;
+            FishBounty.FishShooting += OnFishShot;
             FishingRod.FishCaught += OnFishCaught;
         }
 
         private void OnDisable()
         {
-            FishBounty.ShotByFish -= OnFishShot;
+            FishBounty.FishShooting -= OnFishShot;
             FishingRod.FishCaught -= OnFishCaught;
         }
 

@@ -41,12 +41,12 @@ public class FishingRod : MonoBehaviour
 
     private void OnEnable()
     {
-        FishBounty.ShotByFish += GetStunnedFromShot;
+        FishBounty.FishShotHit += GetStunnedFromShot;
     }
 
     private void OnDisable()
     {
-        FishBounty.ShotByFish -= GetStunnedFromShot;
+        FishBounty.FishShotHit -= GetStunnedFromShot;
     }
 
     void Start()
@@ -177,17 +177,8 @@ public class FishingRod : MonoBehaviour
 
     private void GetStunnedFromShot(Fish fish, float bounty)
     {
-        // have some collision checking later, to see if we actuallly got hit
-        StartCoroutine(GetStunnedFromShot());
-    }
-
-    private IEnumerator GetStunnedFromShot()
-    {
-        yield return new WaitForSeconds(TimingInfo.FishShootDelaySeconds);
-
-        // stunned effect duration in RandomMovement
-        //delay += 0.3f;        // rn the stun is unavoidable and annoying so removing it until i add a way to avoid getting shot
-
+        // stunned effect duration should match RandomMovement (unless feedback is against this)
+        delay += 0.3f;
     }
 
 }

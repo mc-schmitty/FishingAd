@@ -61,13 +61,13 @@ namespace FishHistory
         private void OnEnable()
         {
             FishingRod.FishCaught += IncrementFishCounter;
-            FishBounty.ShotByFish += IncrementPointLossCounter;
+            FishBounty.FishShotHit += IncrementPointLossCounter;
         }
 
         private void OnDisable()
         {
             FishingRod.FishCaught -= IncrementFishCounter;
-            FishBounty.ShotByFish -= IncrementPointLossCounter;
+            FishBounty.FishShotHit -= IncrementPointLossCounter;
         }
 
         // Test if any records are broken, and add them if true
