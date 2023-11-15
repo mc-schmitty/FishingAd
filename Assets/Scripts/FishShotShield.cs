@@ -28,9 +28,17 @@ public class FishShotShield : MonoBehaviour
     private Image shopMenuIconRecharge;
 
     [SerializeField]
-    private Image personalShield;
+    private Image personalShield;               // Central shield object, also displays shield hp radially
     [SerializeField]
-    private float psRadius = 1f;
+    private Image personalShieldRadiusImage;    // currently used for detecting shots fired in radius
+    [SerializeField]
+    private Gradient shieldDamageColor;         // color shield will change to as health lowers
+    [SerializeField]
+    private Image personalShieldDamageColor;    // image who's color will be manipulated by above
+    [SerializeField]
+    private AnimationCurve shieldDamageFlashRate;       // how much shield will flicker as health lowers
+    [SerializeField]
+    private UIRadarPing shieldFlashObject;              // image which will flicker according to curve
     [SerializeField]
     private float personalShieldMaxHP;
     private float psHP;
@@ -47,13 +55,13 @@ public class FishShotShield : MonoBehaviour
     private bool weakMenus = true;
 
     [SerializeField]
-    private ParticleSystem[] regDamageSubPE;
+    private Sprite[] damageSprites;
     [SerializeField]
-    private ParticleSystem[] pShieldDamageSubPE;
+    private ParticleSystem pShieldDamagePE;
     [SerializeField]
-    private ParticleSystem[] ftShieldDamageSubPE;
+    private ParticleSystem ftShieldDamagePE;
     [SerializeField]
-    private ParticleSystem[] smShieldDamageSubPE;
+    private ParticleSystem smShieldDamagePE;
 
     private void Awake()
     {
@@ -78,9 +86,12 @@ public class FishShotShield : MonoBehaviour
         // refresh shield health
         ftShieldHP = ftShieldMaxHP;
         smShieldHP = smShieldMaxHP;
-        psHP = personalShieldMaxHP;
+        psHP = personalShieldMaxHP;     // reset shield health
 
-        personalShield.gameObject.SetActive(false);
+        shieldFlashObject.PingRate = shieldDamageFlashRate.Evaluate(0);         // reset shield effect
+        personalShieldDamageColor.color = shieldDamageColor.Evaluate(0);
+
+        personalShield.gameObject.SetActive(false);     // disable shield (if not already disabled)
     }
 
     private void Update()
@@ -105,6 +116,21 @@ public class FishShotShield : MonoBehaviour
         return GetActiveShield() > 0;
     }
 
+    public bool IsBlocking(Vector3 damageLocation)
+    {
+        int active = GetActiveShield();
+        if(active == 3)
+        {
+            // need to actually check if shield radius covers shooting location
+            Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(Camera.main, damageLocation);
+            return Vector2.Distance(screenPoint, personalShield.rectTransform.position) <= personalShieldRadiusImage.rectTransform.rect.width;
+        }
+        else
+        {
+            return GetActiveShield() > 0;
+        }
+    }
+
     // Subtracts the damage from active shield, and deactivates it if necessary
     private void BlockDamage(Fish fish, float fishDamageBlocked)
     {
@@ -113,7 +139,8 @@ public class FishShotShield : MonoBehaviour
         {
             case 1:
                 smShieldHP = Mathf.Max(0, smShieldHP - fishDamageBlocked);
-                // Play particle effect or smth
+                shopMenuShield.sprite = damageSprites[(int)Mathf.Lerp(damageSprites.Length - 1, 0, smShieldHP / smShieldMaxHP)];        // Set sprite to damaged value
+                smShieldDamagePE.Play();                // play particle effect
 
                 if(smShieldHP <= 0)
                 {
@@ -122,26 +149,40 @@ public class FishShotShield : MonoBehaviour
                     shopMenuShield.color *= new Color(1, 1, 1, 0.1f);
                     if(weakMenus)
                         shopMenuShield.gameObject.SetActive(false);             // Kick you out of the menu
+                    shopMenuShield.sprite = damageSprites[damageSprites.Length - 1];
                     StartCoroutine(RechargeShopMenuShield());
                 }
                 break;
             case 2:
                 ftShieldHP = Mathf.Max(0, ftShieldHP - fishDamageBlocked);
+                fishTankShield.sprite = damageSprites[(int)Mathf.Lerp(damageSprites.Length - 1, 0, ftShieldHP / ftShieldMaxHP)];        // Set sprite to damaged value
+                ftShieldDamagePE.Play();        // play particle effect
 
-                if(ftShieldHP <= 0)
+                if (ftShieldHP <= 0)
                 {
                     // deactivate shield
                     DeactivateFishMenuShield();
                     fishTankShield.color *= new Color(1, 1, 1, 0.1f);
                     if (weakMenus)
                         fishTankShield.gameObject.SetActive(false);
+                    fishTankShield.sprite = damageSprites[damageSprites.Length - 1];
                     StartCoroutine(RechargeFishMenuShield());
                 }
                 break;
             case 3:
                 psHP = Mathf.Max(0, psHP - fishDamageBlocked);
 
-                if(psHP <= 0)
+                // This plays the particle effect at the shield's location
+                Ray r = RectTransformUtility.ScreenPointToRay(Camera.main, personalShield.rectTransform.position);      // need ray from screen to world
+                pShieldDamagePE.transform.position = r.origin + (r.direction.normalized * 2);                      // move along ray by set amount
+                pShieldDamagePE.Play();
+
+                // Now update the pshield graphic depending on damage taken
+                float shieldHP = 1 - psHP / personalShieldMaxHP;    // invert damage evaluation
+                shieldFlashObject.PingRate = shieldDamageFlashRate.Evaluate(shieldHP);
+                personalShieldDamageColor.color = shieldDamageColor.Evaluate(shieldHP);
+
+                if (psHP <= 0)
                 {
                     DeactivatePShield();
                     StartCoroutine(RechargePersonalShield());
@@ -158,17 +199,6 @@ public class FishShotShield : MonoBehaviour
         if (!psActivated)
         {
             psActivated = true;
-
-            // disable regular shot particle effects, and enable shield pe
-            foreach (ParticleSystem p in regDamageSubPE)
-            {
-                p.gameObject.SetActive(false);
-            }
-
-            foreach (ParticleSystem p2 in pShieldDamageSubPE)
-            {
-                p2.gameObject.SetActive(true);
-            }
             personalShield.gameObject.SetActive(true);
         }
 
@@ -185,17 +215,6 @@ public class FishShotShield : MonoBehaviour
         {
             psActivated = false;
 
-            // go back to regular particles
-            foreach (ParticleSystem p in regDamageSubPE)
-            {
-                p.gameObject.SetActive(true);
-            }
-
-            foreach (ParticleSystem p2 in pShieldDamageSubPE)
-            {
-                p2.gameObject.SetActive(false);
-            }
-
             personalShield.gameObject.SetActive(false);
         }
         
@@ -208,28 +227,12 @@ public class FishShotShield : MonoBehaviour
         if (smShieldHP <= 0)
             return;             // Cancel shield activation if health is too low
 
-        foreach(ParticleSystem p in regDamageSubPE)
-        {
-            p.gameObject.SetActive(false);
-        }
-
-        foreach(ParticleSystem p2 in smShieldDamageSubPE)
-        {
-            p2.gameObject.SetActive(true);
-        }
+        // todo: Graphical stuff
     }
 
     public void DeactivateShopMenuShield()
     {
-        foreach (ParticleSystem p in regDamageSubPE)
-        {
-            p.gameObject.SetActive(true);
-        }
-
-        foreach (ParticleSystem p2 in smShieldDamageSubPE)
-        {
-            p2.gameObject.SetActive(false);
-        }
+        // todo: Graphical stuff
     }
 
     public void ActivateFishMenuShield()
@@ -239,28 +242,12 @@ public class FishShotShield : MonoBehaviour
         if (ftShieldHP <= 0)
             return;
 
-        foreach (ParticleSystem p in regDamageSubPE)
-        {
-            p.gameObject.SetActive(false);
-        }
-
-        foreach (ParticleSystem p2 in ftShieldDamageSubPE)
-        {
-            p2.gameObject.SetActive(true);
-        }
+        // todo: Graphical stuff
     }
 
     public void DeactivateFishMenuShield()
     {
-        foreach (ParticleSystem p in regDamageSubPE)
-        {
-            p.gameObject.SetActive(true);
-        }
-
-        foreach (ParticleSystem p2 in ftShieldDamageSubPE)
-        {
-            p2.gameObject.SetActive(false);
-        }
+        // todo: Graphical stuff
     }
 
     // Returns int representing active menu
@@ -326,6 +313,8 @@ public class FishShotShield : MonoBehaviour
         yield return new WaitForSeconds(personalShieldRechargeTime);
 
         psHP = personalShieldMaxHP;
+        shieldFlashObject.PingRate = shieldDamageFlashRate.Evaluate(0);
+        personalShieldDamageColor.color = shieldDamageColor.Evaluate(0);
     }
 
     private IEnumerator RechargeFishMenuShield()
@@ -343,6 +332,7 @@ public class FishShotShield : MonoBehaviour
         fishTankIconRecharge.fillAmount = 0f;
         ftShieldHP = ftShieldMaxHP;
         fishTankShield.color *= new Color(1, 1, 1, 10);         // Restore color to what it was before breaking
+        fishTankShield.sprite = damageSprites[0];
 
         if (GetActiveMenu() == 2)               // If menu is open, activate it
             ActivateFishMenuShield();
@@ -363,6 +353,7 @@ public class FishShotShield : MonoBehaviour
         shopMenuIconRecharge.fillAmount = 0f;
         smShieldHP = smShieldMaxHP;
         shopMenuShield.color *= new Color(1, 1, 1, 10);
+        shopMenuShield.sprite = damageSprites[0];
 
         if (GetActiveMenu() == 1)       // reactivate shield even if menu is open
             ActivateShopMenuShield();

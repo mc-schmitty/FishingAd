@@ -10,6 +10,8 @@ public class RandomMovement : MonoBehaviour
     private float duration = 0.4f;
     [SerializeField]
     private float multiplier = 0.2f;
+    [SerializeField]
+    private ParticleSystem damageEffect;
 
     private bool set;
     private Vector3[] setPos;
@@ -50,6 +52,7 @@ public class RandomMovement : MonoBehaviour
     private void TriggerJiggle(Fish fish, float amount)
     {
         StartCoroutine(JigglePieces(duration));
+        damageEffect?.Play();
     }
 
     // Jiggle all pieces, then restore them to their regular location

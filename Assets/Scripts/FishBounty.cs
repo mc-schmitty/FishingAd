@@ -94,7 +94,7 @@ public class FishBounty : MonoBehaviour
     private IEnumerator ShotResult(Fish shooter, float angerPoints, float pointLoss)
     {
         yield return new WaitForSeconds(TimingInfo.FishShootDelaySeconds);
-        if (!FishShotShield.Manager.IsBlocking())
+        if (!FishShotShield.Manager.IsBlocking(shooter.transform.position))
         {
             FishShotHit?.Invoke(shooter, pointLoss);
             fishAggression = Mathf.Max(fishAggression - angerPoints, 0);                  // fish takes out some aggression and everything is all good
