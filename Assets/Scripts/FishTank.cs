@@ -30,6 +30,8 @@ public class FishTank : MonoBehaviour
 
     private FishSO[] loadedFishSO;
     private List<Fish> fishPool;
+    // for pooling purposes
+    private Queue<Fish> caughtFishPool;
 
     [SerializeField]
     [Tooltip("Seconds until state changes from Empty to Interested the first time you cast.")]      // Default: 6 - 12
@@ -123,6 +125,7 @@ public class FishTank : MonoBehaviour
         // Load scriptableobjects
         loadedFishSO = Resources.LoadAll<FishSO>("Fish");
         fishPool = new List<Fish>();
+        caughtFishPool = new Queue<Fish>();
         bobScript = bobberHookTransform.GetComponentInParent<BobberEffects>();
         fishFrenzyMeter = 0;        // Reset fish frenzy meter
         fishFrenzyDiv = 1;
@@ -163,6 +166,7 @@ public class FishTank : MonoBehaviour
         {
             Fish outp = interestedFish;
             fishPool.Remove(outp);
+            StartCoroutine(RecycleFish(outp));
             // message that says fish was caught is in FishingRod
             timeAtNextEvent = Time.fixedTime + stateCaughtFish();
             fishFrenzyMeter += (fishFrenzyTimer == 0 ? 1f : 0.25f);      // increase fish frenzy meter by 1, decreased if frenzy active
@@ -205,7 +209,21 @@ public class FishTank : MonoBehaviour
         if (fishPool.Count >= maxPoolSize)
             return null;
 
-        Fish newFish = GameObject.Instantiate(fishPrefab, transform.position + Random.insideUnitSphere * 2, transform.rotation, transform).GetComponent<Fish>();
+        Fish newFish;
+        bool useRecycled = caughtFishPool.Count > 0;
+        if(useRecycled)        // Recycle a previously caught fish
+        {
+            newFish = caughtFishPool.Dequeue();
+            newFish.transform.position = transform.position + Random.insideUnitSphere * 2;
+            newFish.transform.rotation = transform.rotation;
+            newFish.transform.parent = transform;
+            newFish.gameObject.SetActive(true);
+        }
+        else                            // Add a new fish to the pool
+        {
+            newFish = GameObject.Instantiate(fishPrefab, transform.position + Random.insideUnitSphere * 2, transform.rotation, transform).GetComponent<Fish>();
+        }
+
         if (newFish.transform.position.y + 0.05f >= waterLevel.position.y)      // Push fish down a bit if it spawns too high
             newFish.transform.position += Vector3.down;
         // So rn im not sure if start will be called at instantiation, or after this function finishes. I guess ill find out and update this later
@@ -222,6 +240,17 @@ public class FishTank : MonoBehaviour
         fm.wanderPoint2 = fm.transform.position - (Vector3.left * invert) * (wanderInitialDist + Random.Range(wanderRandomDistRange.x, wanderRandomDistRange.y));
         fm.swimSpeed += Random.Range(swimSpeedModRandomRange.x, swimSpeedModRandomRange.y);      // Lot of random calls here per fish
         fm.wiggleSpeed += Random.Range(wiggleSpeedModRandomRange.x, wiggleSpeedModRandomRange.y);
+        fm.doWiggle = true;         // Make fish wiggle
+        /* Start is only called after this function finishes, which seems to result in certain important references not loading.
+         * We have FishMovement Start() cause the fish to move, so new fish dont need to be told to wander.
+         * Existing fish do not Start() again, so need to tell them to wander.
+         * Calling ResumeWander() seems to break newFish, but works for existing fish. The solution to this checks if the fish is new.
+         * This solution works for now, but in the future I'd prefer to avoid having different bevahiour if a fish is new or not. */
+        if (useRecycled)
+        {
+            fm.ResumeWander();          // Make fish wander
+            newFish.GetComponent<FishColor>().StartSpawningEffect();        // make fish fade in (maybe auto this by connecting it to OnEnable)
+        }
 
         //newFish.GetComponent<FishColor>().UnderWater = true;            // let fish know its underwater  (ok so weird behaviour? this actually sets the fishes og color to the water color)
         // (Therefore Start() on the component script only runs after this function is finished running)
@@ -390,5 +419,16 @@ public class FishTank : MonoBehaviour
             yield return new WaitForSeconds(secondsUntilPopulate);
             InitializeNewFish();
         } 
+    }
+
+
+    private IEnumerator RecycleFish(Fish dedFish)
+    {
+        // long ass delay to make sure nothing is using the old fish
+        yield return new WaitForSeconds(TimingInfo.FishPulledSeconds + TimingInfo.FishLingerSeconds + TimingInfo.FishLingerBountyBonusSeconds + TimingInfo.FishReturnSeconds + 1f);
+
+        dedFish.transform.position = Vector3.zero;
+        dedFish.transform.rotation = Quaternion.identity;
+        caughtFishPool.Enqueue(dedFish);
     }
 }

@@ -35,10 +35,9 @@ public class FishColor : MonoBehaviour
     {
         if (TryGetComponent<SpriteRenderer>(out sprite))
         {
-            ogColor = sprite.color;
-            UnderWater = transform.position.y < waterLevel.y;   // also update the sprite on the first frame (make this a func maybe?)
+            ogColor = sprite.color; 
 
-            StartCoroutine(SpawnInEffect(1f));
+            StartSpawningEffect();
         }
         else
             this.enabled = false;
@@ -48,6 +47,12 @@ public class FishColor : MonoBehaviour
     {
         if(!spawning)
             UnderWater = transform.position.y < waterLevel.y;
+    }
+
+    public void StartSpawningEffect()
+    {
+        UnderWater = transform.position.y < waterLevel.y;   // update the sprite on the first frame
+        StartCoroutine(SpawnInEffect(1f));
     }
 
     // This happens after update so even though im overriding it every frame i think it works out?

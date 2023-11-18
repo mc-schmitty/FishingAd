@@ -7606,6 +7606,7 @@ MonoBehaviour:
   nodeParent: {fileID: 642691169}
   nodePrefab: {fileID: 5475950438851837350, guid: 5ca91a46e058e2e4bb7976056063591c,
     type: 3}
+  maxHistoryNodes: 40
 --- !u!4 &309998170
 Transform:
   m_ObjectHideFlags: 0

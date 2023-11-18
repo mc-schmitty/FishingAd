@@ -56,6 +56,19 @@ namespace FishHistory
 
             // Later animate fish (currently this is done automatically via attached FishMovement)
         }
+
+        public void ClearFish()
+        {
+            fishImage.sprite = null;
+
+            // Make previous history item light up again
+            if (previousNode != null)
+            {
+                previousNode.MakeInteractable(true);
+            }
+
+            fishImage.rectTransform.sizeDelta = Vector2.zero;
+        }
     }
 }
 

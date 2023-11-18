@@ -32,6 +32,8 @@ namespace FishHistory
         private RectTransform nodeParent;
         [SerializeField]
         private FishHistoryListNode nodePrefab;
+        [SerializeField]
+        private int maxHistoryNodes = 50;   // Currently does not cap out internal history list storage, just visual elements
 
         private List<FishHistory> historyList;
 
@@ -70,7 +72,17 @@ namespace FishHistory
             historyList.Add(fh);
 
             // Update ui history 
-            FishHistoryListNode newNode = GameObject.Instantiate<FishHistoryListNode>(nodePrefab, nodeParent);
+            FishHistoryListNode newNode;
+            if(historyList.Count > maxHistoryNodes)
+            {
+                newNode = nodeParent.GetChild(0).GetComponent<FishHistoryListNode>();       // Reuse existing nodes
+                newNode.transform.SetSiblingIndex(maxHistoryNodes - 1);                     // set first node to last node (moves it to top of list)
+                newNode.MakeInteractable(true);
+            }
+            else 
+            {
+                newNode = GameObject.Instantiate<FishHistoryListNode>(nodePrefab, nodeParent);
+            }
             newNode.FishData = fh;
 
             // Check if record is new high score (and add it if it is)
