@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -49,6 +50,10 @@ public class FishShotShield : MonoBehaviour
     private float psChargeTime = 0.25f;
     private float psRampUp;
     private bool psActivated;
+    [SerializeField]
+    private Image psUIIcon;
+    [SerializeField]
+    private GameObject psUIBrokenIndicator;
 
     [SerializeField]
     [Tooltip("If true, menus close when they are broken.")]
@@ -99,14 +104,20 @@ public class FishShotShield : MonoBehaviour
         // Mouse down, charge up (and activate) pshield
         if (Input.GetMouseButton(0) && GetActiveMenu() == 0 && psHP > 0)
         {
-            psRampUp = Mathf.Min(psRampUp + Time.deltaTime, 1);
+            psRampUp = Mathf.Clamp(psRampUp + Time.deltaTime, 0, 1);        // Assumes rampup will never take over 1 sec to activate
             if(psRampUp >= psChargeTime)
             {
                 ActivatePShield();
             }
         }
         else {
-            psRampUp = 0;
+            psRampUp = Mathf.Clamp(psRampUp - Time.deltaTime, -personalShieldRechargeTime, 0);     // after shield is inactive, recharge shield
+            if ((psHP < personalShieldMaxHP && psHP > 0) && psRampUp <= -personalShieldRechargeTime)
+            {
+                // adds a bit of health depending on rechargeTime
+                psHP = Mathf.Min(personalShieldMaxHP, psHP + (personalShieldMaxHP / personalShieldRechargeTime) * Time.deltaTime);
+
+            }
             DeactivatePShield();
         }
     }
@@ -200,6 +211,7 @@ public class FishShotShield : MonoBehaviour
         {
             psActivated = true;
             personalShield.gameObject.SetActive(true);
+            psUIIcon.gameObject.SetActive(false);
         }
 
         personalShield.rectTransform.position = Input.mousePosition;
@@ -216,8 +228,11 @@ public class FishShotShield : MonoBehaviour
             psActivated = false;
 
             personalShield.gameObject.SetActive(false);
+            psUIIcon.gameObject.SetActive(true);
         }
-        
+
+        if(!psUIBrokenIndicator.activeSelf)         // Only want icon updating to hp if not broken, otherwise Coroutine controls it (also this is kinda a hacky way of doing it)
+            psUIIcon.fillAmount = psHP / personalShieldMaxHP;
     }
 
     public void ActivateShopMenuShield()
@@ -310,7 +325,20 @@ public class FishShotShield : MonoBehaviour
     // Reset shield health
     private IEnumerator RechargePersonalShield()
     {
-        yield return new WaitForSeconds(personalShieldRechargeTime);
+        float timer = 0;
+        psUIIcon.fillAmount = 0;
+        psUIBrokenIndicator.SetActive(true);
+
+        while(timer < personalShieldRechargeTime)
+        {
+            yield return null;      // stay broken for at least one frame
+            timer += Time.deltaTime;
+            psUIIcon.fillAmount = timer / personalShieldRechargeTime;       // Fill in icon while keeping hp at 0
+        }
+
+        // End of cooldown, reset shield
+        psUIBrokenIndicator.SetActive(false);
+        psUIIcon.fillAmount = 1;
 
         psHP = personalShieldMaxHP;
         shieldFlashObject.PingRate = shieldDamageFlashRate.Evaluate(0);
